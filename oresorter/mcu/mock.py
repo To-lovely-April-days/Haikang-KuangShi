@@ -2,14 +2,17 @@
 
 - ``MockMcuLink``：进程内实现 ``McuLink``，直接解释指令负载，维护参数表 / 状态 / 编码器计数 / 喷阀队列，
   可注入 ACK 超时、NACK、掉线。开发机与大部分测试用它。
-- ``MockMcuServer``（P2）：真正的 asyncio TCP server，讲 docs/04 的帧协议，用来测 ``TcpMcuLink``。
+- ``MockMcuServer``：真正的 TCP server（threading），讲 docs/04 的帧协议，复用 ``McuModel``，
+  带故障注入（丢 ACK、延迟 ACK、静默、CRC 错误、主动断线、推送 EVENT），用来测 ``TcpMcuLink``。
 """
 
 from __future__ import annotations
 
+import contextlib
+import socket
 import threading
 import time
-from collections import deque
+from collections import OrderedDict, deque
 from typing import TYPE_CHECKING, Any
 
 from oresorter.log import get_logger
@@ -343,3 +346,273 @@ class MockMcuLink(McuLink):
             "fired": len(m.fired),
             "counters": m.counters_payload().to_dict(),
         }
+
+
+# --------------------------------------------------------------------------------------
+# TCP Mock 下位机（讲帧协议）
+# --------------------------------------------------------------------------------------
+
+_ACK_CACHE_SIZE = 64
+_SERVER_RECV_CHUNK = 65536
+_SERVER_SOCK_TIMEOUT = 0.5
+_SERVER_JOIN_S = 2.0
+
+
+class _ClientConn:
+    """一条客户端连接：socket、帧解析器、最近 64 个 (seq → ACK 字节) 幂等缓存。"""
+
+    def __init__(self, sock: socket.socket, addr: tuple[Any, ...], index: int):
+        self.sock = sock
+        self.addr = addr
+        self.index = index
+        self.parser = P.FrameParser()
+        self.ack_cache: OrderedDict[int, bytes] = OrderedDict()
+        self.send_lock = threading.Lock()
+        self.thread: threading.Thread | None = None
+        self.closed = False
+
+    def remember_ack(self, seq: int, ack: bytes) -> None:
+        self.ack_cache[seq] = ack
+        while len(self.ack_cache) > _ACK_CACHE_SIZE:
+            self.ack_cache.popitem(last=False)
+
+    def close(self) -> None:
+        self.closed = True
+        with contextlib.suppress(OSError):
+            self.sock.shutdown(socket.SHUT_RDWR)
+        with contextlib.suppress(OSError):
+            self.sock.close()
+
+
+class MockMcuServer:
+    """讲 docs/04 帧协议的 TCP Mock 下位机（threading）。
+
+    - 每个连接一个线程：``FrameParser.feed`` → 对每帧：SEQ 在最近 64 个已处理缓存里 → 只重发缓存的 ACK
+      （幂等，不重复执行）；否则 ``model.handle`` → ``encode_ack``（HEARTBEAT 的应答即 STATUS 0x81，
+      data = StatusPayload）。EJECT 与广播地址（0xFF）不回 ACK。
+    - 每 ``counters_interval`` 秒向所有客户端推 COUNTERS（0xC1，服务端 seq 自增）。
+    - 故障注入（线程安全）：``drop_acks(n)``、``ack_delay_s``、``silent``、``corrupt_next_ack()``、
+      ``disconnect_clients()``、``send_event(code, level, detail)``、``heartbeat_result``（≠0 时
+      HEARTBEAT 只回 1 字节 result 的 NACK，不带 StatusPayload，用于测心跳看门狗对 NACK 的容忍）。
+
+    注意：``drop_acks`` **不作用于 HEARTBEAT**（否则后台心跳会不确定地消耗计数，测试无法断言重发次数）；
+    心跳丢失请用 ``silent``。``silent`` 期间指令仍被执行，只是不回应，COUNTERS 推送也暂停。
+    """
+
+    def __init__(
+        self,
+        model: McuModel | None = None,
+        *,
+        host: str = "127.0.0.1",
+        port: int = 0,
+        counters_interval: float = 1.0,
+    ):
+        self.model = model if model is not None else McuModel()
+        self.host = host
+        self._port_requested = int(port)
+        self.port = 0
+        self.counters_interval = float(counters_interval)
+        self._lock = threading.Lock()
+        self._stop = threading.Event()
+        self._srv_sock: socket.socket | None = None
+        self._accept_thread: threading.Thread | None = None
+        self._counters_thread: threading.Thread | None = None
+        self._clients: dict[int, _ClientConn] = {}
+        self._client_index = 0
+        self._push_seq = 0
+        self.received: deque[tuple[int, int, bytes]] = deque(maxlen=1000)
+        self.duplicate_frames = 0
+        self.accepted_total = 0
+        # 故障注入
+        self._drop_acks_remaining = 0
+        self.ack_delay_s = 0.0
+        self.silent = False
+        self.heartbeat_result = int(P.AckResult.OK)
+        self._corrupt_next_ack = False
+
+    # ---- 生命周期 ----
+    def start(self) -> None:
+        """绑定端口并启动 accept / counters 线程。``port`` 属性为实际绑定端口。"""
+        if self._srv_sock is not None:
+            return
+        self._stop.clear()
+        srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        srv.bind((self.host, self._port_requested))
+        srv.listen(8)
+        srv.settimeout(_SERVER_SOCK_TIMEOUT)
+        self._srv_sock = srv
+        self.port = srv.getsockname()[1]
+        self._accept_thread = threading.Thread(
+            target=self._accept_loop, name="mock-mcu-accept", daemon=True
+        )
+        self._counters_thread = threading.Thread(
+            target=self._counters_loop, name="mock-mcu-counters", daemon=True
+        )
+        self._accept_thread.start()
+        self._counters_thread.start()
+        log.info("Mock 下位机 TCP server 启动", extra={"host": self.host, "port": self.port})
+
+    def stop(self) -> None:
+        """关闭监听、断开所有客户端并 join 全部线程（各 ≤ 2 s）。可重复调用。"""
+        self._stop.set()
+        srv, self._srv_sock = self._srv_sock, None
+        if srv is not None:
+            with contextlib.suppress(OSError):
+                srv.close()
+        clients = self.disconnect_clients()
+        threads = [t for t in (self._accept_thread, self._counters_thread) if t is not None]
+        threads += [c.thread for c in clients if c.thread is not None]
+        self._accept_thread = None
+        self._counters_thread = None
+        for t in threads:
+            t.join(_SERVER_JOIN_S)
+            if t.is_alive():
+                log.error("Mock 下位机线程未能在时限内退出", extra={"thread": t.name})
+        if srv is not None:
+            log.info("Mock 下位机 TCP server 已停止", extra={"port": self.port})
+
+    @property
+    def clients(self) -> int:
+        """当前连接数。"""
+        with self._lock:
+            return len(self._clients)
+
+    def recent(self, cmd: int | None = None) -> list[tuple[int, int, bytes]]:
+        """``received`` 的线程安全快照，可按指令码过滤。"""
+        with self._lock:
+            items = list(self.received)
+        return items if cmd is None else [r for r in items if r[0] == cmd]
+
+    # ---- 故障注入 ----
+    def drop_acks(self, n: int) -> None:
+        """接下来 n 个需 ACK 的帧（HEARTBEAT 除外）不回应但仍执行，用于测重发与幂等。"""
+        with self._lock:
+            self._drop_acks_remaining = int(n)
+
+    def corrupt_next_ack(self) -> None:
+        """下一帧 ACK 的 CRC 故意写错（客户端应丢弃并重发）。"""
+        with self._lock:
+            self._corrupt_next_ack = True
+
+    def disconnect_clients(self) -> list[_ClientConn]:
+        """服务器主动断开所有客户端连接；返回被断开的连接对象（供 stop 时 join 线程）。"""
+        with self._lock:
+            clients = list(self._clients.values())
+        for c in clients:
+            c.close()
+        return clients
+
+    def send_event(self, code: int, level: int, detail: int = 0) -> None:
+        """向所有客户端推送 EVENT 帧（0xC0）。"""
+        frame = P.encode(
+            P.Report.EVENT, P.EventPayload(code, level, detail).pack(), seq=self._next_push_seq()
+        )
+        self._broadcast(frame)
+
+    # ---- 内部 ----
+    def _next_push_seq(self) -> int:
+        with self._lock:
+            self._push_seq = self._push_seq % 0xFFFF + 1
+            return self._push_seq
+
+    def _accept_loop(self) -> None:
+        srv = self._srv_sock
+        while not self._stop.is_set() and srv is not None:
+            try:
+                sock, addr = srv.accept()
+            except TimeoutError:
+                continue
+            except OSError:
+                break
+            sock.settimeout(_SERVER_SOCK_TIMEOUT)
+            with contextlib.suppress(OSError):
+                sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            with self._lock:
+                self._client_index += 1
+                idx = self._client_index
+                client = _ClientConn(sock, addr, idx)
+                self._clients[idx] = client
+                self.accepted_total += 1
+            client.thread = threading.Thread(
+                target=self._serve_client,
+                args=(client,),
+                name=f"mock-mcu-client-{idx}",
+                daemon=True,
+            )
+            client.thread.start()
+            log.info("Mock 下位机：客户端接入", extra={"client": idx, "peer": str(addr)})
+
+    def _serve_client(self, c: _ClientConn) -> None:
+        try:
+            while not self._stop.is_set() and not c.closed:
+                try:
+                    data = c.sock.recv(_SERVER_RECV_CHUNK)
+                except TimeoutError:
+                    continue
+                except OSError:
+                    break
+                if not data:
+                    break
+                for frame in c.parser.feed(data):
+                    self._handle_frame(c, frame)
+        finally:
+            c.close()
+            with self._lock:
+                self._clients.pop(c.index, None)
+            log.info("Mock 下位机：客户端断开", extra={"client": c.index})
+
+    def _handle_frame(self, c: _ClientConn, fr: P.McuFrame) -> None:
+        with self._lock:
+            self.received.append((fr.cmd, fr.seq, fr.payload))
+        if fr.cmd == P.Cmd.EJECT or fr.is_broadcast:
+            self.model.handle(fr.cmd, fr.payload)  # 不回 ACK
+            return
+        ack = c.ack_cache.get(fr.seq)
+        if ack is None:
+            result, data = self.model.handle(fr.cmd, fr.payload)
+            with self._lock:
+                hb_result = self.heartbeat_result
+            if fr.cmd == P.Cmd.HEARTBEAT and hb_result != P.AckResult.OK:
+                result, data = hb_result, b""  # 注入：心跳只回 result 字节
+            ack = P.encode_ack(fr, result, data)
+            c.remember_ack(fr.seq, ack)
+        else:
+            with self._lock:
+                self.duplicate_frames += 1
+        with self._lock:
+            if self.silent:
+                return
+            if self._drop_acks_remaining > 0 and fr.cmd != P.Cmd.HEARTBEAT:
+                self._drop_acks_remaining -= 1
+                return
+            corrupt, self._corrupt_next_ack = self._corrupt_next_ack, False
+            delay = self.ack_delay_s
+        if delay > 0 and self._stop.wait(delay):
+            return
+        if corrupt:
+            ack = ack[:-2] + bytes([ack[-2] ^ 0xFF, ack[-1]])
+        self._send_to(c, ack)
+
+    def _send_to(self, c: _ClientConn, data: bytes) -> bool:
+        with c.send_lock:
+            try:
+                c.sock.sendall(data)
+                return True
+            except OSError:
+                return False
+
+    def _broadcast(self, frame: bytes) -> None:
+        with self._lock:
+            clients = list(self._clients.values())
+        for c in clients:
+            self._send_to(c, frame)
+
+    def _counters_loop(self) -> None:
+        while not self._stop.wait(self.counters_interval):
+            if self.silent:
+                continue
+            frame = P.encode(
+                P.Report.COUNTERS, self.model.counters_payload().pack(), seq=self._next_push_seq()
+            )
+            self._broadcast(frame)

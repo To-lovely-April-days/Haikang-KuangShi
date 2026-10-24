@@ -1,8 +1,9 @@
 """下位机通讯协议（docs/04 草案 v0.1）：常量、参数表、负载打包/解包。
 
 本文件分两层：
-- **负载层**（本阶段已实现）：指令码、参数 ID、ACK 结果码、各指令 PAYLOAD 的 ``pack_*`` / ``unpack_*``；
-- **帧层**（``crc16`` / ``encode`` / ``decode`` / ``FrameParser``，处理 SOF 同步、粘包/半包、CRC）。
+- **负载层**：指令码、参数 ID、ACK 结果码、各指令 PAYLOAD 的 ``pack_*`` / ``unpack_*``；
+- **帧层**：``crc16_modbus`` / ``McuFrame`` / ``encode`` / ``encode_ack`` / ``decode`` / ``FrameParser``，
+  处理 SOF 同步、粘包/半包、CRC 校验与重新同步（docs/04 §2）。
 
 所有多字节整数小端。
 """
@@ -420,3 +421,218 @@ def check_param_range(params: dict[int, int]) -> list[tuple[int, int, tuple[int,
         elif not (lim[0] <= v <= lim[1]):
             bad.append((pid, v, lim))
     return bad
+
+
+# --------------------------------------------------------------------------------------
+# 帧层：CRC16 / 帧编码 / 帧解析（docs/04 §2）
+# --------------------------------------------------------------------------------------
+
+CRC16_POLY_REFLECTED = 0xA001  # 多项式 0x8005 的反射形式
+CRC16_INIT = 0xFFFF
+REPORT_CMD_MIN = 0xC0
+REPORT_CMD_MAX = 0xCF
+HEADER_BODY_FMT = "<BHBBH"  # VER u8, SEQ u16, ADDR u8, CMD u8, LEN u16（紧跟 SOF 之后）
+DEFAULT_PARSER_BUFFER = 64 * 1024
+
+
+def _build_crc16_table() -> tuple[int, ...]:
+    table = []
+    for i in range(256):
+        crc = i
+        for _ in range(8):
+            if crc & 1:
+                crc = (crc >> 1) ^ CRC16_POLY_REFLECTED
+            else:
+                crc >>= 1
+        table.append(crc)
+    return tuple(table)
+
+
+CRC16_TABLE: tuple[int, ...] = _build_crc16_table()
+
+
+def crc16_modbus(data: bytes, init: int = CRC16_INIT) -> int:
+    """CRC16-MODBUS（多项式 0x8005 反射 0xA001，初值 0xFFFF，不取反），查表实现。
+
+    已知向量：``crc16_modbus(b"123456789") == 0x4B37``。``data`` 可为 bytes / bytearray / memoryview。
+    """
+    crc = init & 0xFFFF
+    table = CRC16_TABLE
+    for b in data:
+        crc = (crc >> 8) ^ table[(crc ^ b) & 0xFF]
+    return crc
+
+
+@dataclass(slots=True)
+class McuFrame:
+    """一帧已解析的协议帧（不含 SOF / LEN / CRC，这些在编解码时自动处理）。"""
+
+    seq: int
+    addr: int
+    cmd: int
+    payload: bytes
+    ver: int = VERSION
+
+    @property
+    def is_report(self) -> bool:
+        """是否为下位机主动上报（EVENT / COUNTERS 等，0xC0~0xCF）。"""
+        return REPORT_CMD_MIN <= self.cmd <= REPORT_CMD_MAX
+
+    @property
+    def is_ack(self) -> bool:
+        """是否为应答帧（CMD | 0x80，且不是上报类）。STATUS(0x81) 也是 ACK。"""
+        return bool(self.cmd & ACK_FLAG) and not self.is_report
+
+    @property
+    def base_cmd(self) -> int:
+        """去掉 ACK 标志后的请求指令码。"""
+        return self.cmd & 0x7F
+
+    @property
+    def is_broadcast(self) -> bool:
+        return self.addr == ADDR_BROADCAST
+
+
+def _check_u8(name: str, value: int) -> None:
+    if not 0 <= value <= 0xFF:
+        raise ProtocolError(f"{name}={value} 超出 u8 范围")
+
+
+def encode(
+    cmd: int,
+    payload: bytes = b"",
+    *,
+    seq: int,
+    addr: int = ADDR_MAIN,
+    ver: int = VERSION,
+) -> bytes:
+    """编码一帧：SOF(2) VER(1) SEQ(2 LE) ADDR(1) CMD(1) LEN(2 LE) PAYLOAD CRC16(2 LE)。
+
+    CRC 覆盖 VER~PAYLOAD（偏移 2 到 9+LEN−1）。``LEN > MAX_PAYLOAD`` 或字段越界抛 ``ProtocolError``。
+    """
+    payload = bytes(payload)
+    n = len(payload)
+    if n > MAX_PAYLOAD:
+        raise ProtocolError(f"负载长度 {n} 超过上限 {MAX_PAYLOAD}")
+    if not 0 <= seq <= 0xFFFF:
+        raise ProtocolError(f"seq={seq} 超出 u16 范围")
+    _check_u8("cmd", cmd)
+    _check_u8("addr", addr)
+    _check_u8("ver", ver)
+    body = struct.pack(HEADER_BODY_FMT, ver, seq, addr, cmd, n) + payload
+    return SOF + body + struct.pack("<H", crc16_modbus(body))
+
+
+def encode_ack(req: McuFrame, result: int, data: bytes = b"") -> bytes:
+    """按请求帧构造应答：CMD | 0x80，SEQ / ADDR / VER 原样返回，PAYLOAD = result u8 + data。"""
+    _check_u8("result", result)
+    return encode(
+        req.cmd | ACK_FLAG,
+        bytes([result]) + bytes(data),
+        seq=req.seq,
+        addr=req.addr,
+        ver=req.ver,
+    )
+
+
+def header_plausible(ver: int, addr: int, cmd: int) -> bool:
+    """帧头合理性预检：VER 必须等于当前版本、ADDR ∈ {主控, 广播}、CMD ≠ 0。
+
+    协议 §2 没有规定头部校验，只靠 CRC 的话，一个 SOF 后面跟着被破坏的头部要等 ``LEN`` 字节到齐
+    才能发现错误，期间会吞掉后续有效帧；通过预检把明显不合理的 SOF 立刻当垃圾丢弃，可以更快止损。
+    """
+    return ver == VERSION and addr in (ADDR_MAIN, ADDR_BROADCAST) and cmd != 0
+
+
+class FrameParser:
+    """流式帧解析器：按 SOF 同步、按 LEN 取帧、CRC 校验；处理粘包/半包与垃圾字节。
+
+    - ``check_header``（默认开）：SOF 后的 VER / ADDR / CMD 不满足 ``header_plausible`` 视为垃圾，
+      丢掉这个 SOF 立刻重新同步（计入 ``header_errors``），不等 LEN 字节到齐；LEN 超限同样计入；
+
+    - 可以一个字节一个字节地 ``feed``，内部用 bytearray 缓冲；
+    - CRC 错误 / LEN 超限：丢弃当前 SOF，从下一个 SOF 重新同步；
+    - 缓冲区超过 ``max_buffer`` 时丢弃最旧字节（防止无 SOF 的垃圾流撑爆内存）；
+    - 计数器：``frames_ok`` / ``crc_errors`` / ``resyncs``（失步次数）/ ``bytes_dropped``（丢弃字节数）。
+    """
+
+    def __init__(self, max_buffer: int = DEFAULT_PARSER_BUFFER, *, check_header: bool = True):
+        if max_buffer < HEADER_LEN + CRC_LEN:
+            raise ProtocolError(f"max_buffer={max_buffer} 过小")
+        self.max_buffer = max_buffer
+        self.check_header = bool(check_header)
+        self._buf = bytearray()
+        self._in_sync = True
+        self.frames_ok = 0
+        self.crc_errors = 0
+        self.header_errors = 0
+        self.resyncs = 0
+        self.bytes_dropped = 0
+
+    def reset(self) -> None:
+        """清空缓冲与计数器（重连后调用）。"""
+        self._buf.clear()
+        self._in_sync = True
+        self.frames_ok = 0
+        self.crc_errors = 0
+        self.header_errors = 0
+        self.resyncs = 0
+        self.bytes_dropped = 0
+
+    @property
+    def pending(self) -> int:
+        """缓冲区中尚未成帧的字节数。"""
+        return len(self._buf)
+
+    def _drop(self, n: int) -> None:
+        if n <= 0:
+            return
+        del self._buf[:n]
+        self.bytes_dropped += n
+        if self._in_sync:
+            self._in_sync = False
+            self.resyncs += 1
+
+    def feed(self, data: bytes) -> list[McuFrame]:
+        """喂入任意长度的字节，返回这次新解析出的完整帧（可能为空列表）。"""
+        buf = self._buf
+        buf += data
+        out: list[McuFrame] = []
+        while True:
+            idx = buf.find(SOF)
+            if idx < 0:
+                # 没有完整 SOF：若尾字节是 SOF 的前半个，保留它等待后续字节
+                keep = 1 if buf and buf[-1] == SOF[0] else 0
+                self._drop(len(buf) - keep)
+                break
+            if idx > 0:
+                self._drop(idx)
+            if len(buf) < HEADER_LEN:
+                break
+            ver, seq, addr, cmd, length = struct.unpack_from(HEADER_BODY_FMT, buf, len(SOF))
+            if length > MAX_PAYLOAD or (self.check_header and not header_plausible(ver, addr, cmd)):
+                self.header_errors += 1
+                self._drop(len(SOF))  # 当作垃圾，从下一个 SOF 重新同步，不等 LEN 字节到齐
+                continue
+            total = HEADER_LEN + length + CRC_LEN
+            if len(buf) < total:
+                break
+            crc_calc = crc16_modbus(memoryview(buf)[len(SOF) : HEADER_LEN + length])
+            (crc_rx,) = struct.unpack_from("<H", buf, HEADER_LEN + length)
+            if crc_calc != crc_rx:
+                self.crc_errors += 1
+                self._drop(len(SOF))
+                continue
+            payload = bytes(buf[HEADER_LEN : HEADER_LEN + length])
+            del buf[:total]
+            self.frames_ok += 1
+            self._in_sync = True
+            out.append(McuFrame(seq=seq, addr=addr, cmd=cmd, payload=payload, ver=ver))
+        if len(buf) > self.max_buffer:
+            self._drop(len(buf) - self.max_buffer)
+        return out
+
+
+def decode(buf: bytes) -> list[McuFrame]:
+    """一次性解析一段字节中的所有完整帧（便捷函数；残缺尾部被忽略）。"""
+    return FrameParser().feed(buf)
