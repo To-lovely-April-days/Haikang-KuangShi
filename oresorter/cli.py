@@ -61,10 +61,47 @@ def cmd_serve(args: argparse.Namespace) -> int:
         },
     )
     app = create_app(ctx)
+
+    # systemd Type=notify：启动完成发 READY，之后周期喂狗（不在 systemd 下时全部为空操作）
+    from oresorter.sdnotify import SdNotify, WatchdogThread, watchdog_interval_s
+
+    sd = SdNotify()
+    wd_interval = watchdog_interval_s()
+    watchdog = (
+        WatchdogThread(sd, wd_interval, healthy=lambda: _healthy(ctx))
+        if (sd.enabled and wd_interval)
+        else None
+    )
+
+    def _on_startup(_app) -> None:
+        sd.ready()
+        sd.status("running")
+        if watchdog is not None:
+            watchdog.start()
+
+    def _on_shutdown(_app) -> None:
+        sd.stopping()
+        if watchdog is not None:
+            watchdog.stop()
+        sd.close()
+
+    app.state.startup_hooks.append(_on_startup)
+    app.state.shutdown_hooks.append(_on_shutdown)
     uvicorn.run(
         app, host=host, port=port, log_config=None, access_log=False, timeout_graceful_shutdown=5
     )
     return 0
+
+
+def _healthy(ctx) -> bool:
+    """喂狗前的健康检查：流水线对象若存在且声明不健康则不喂狗。设备掉线不算（有重连）。"""
+    pipeline = getattr(ctx, "pipeline", None)
+    if pipeline is not None and hasattr(pipeline, "healthy"):
+        try:
+            return bool(pipeline.healthy())
+        except Exception:
+            return False
+    return True
 
 
 def build_parser() -> argparse.ArgumentParser:
