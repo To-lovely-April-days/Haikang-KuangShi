@@ -90,7 +90,7 @@ def system_save(request: Request, body: RequestIdBody | None = None) -> dict[str
 
 @router.post("/system/shutdown", response_model=PowerOut)
 def system_shutdown(request: Request, body: RequestIdBody | None = None) -> dict[str, Any]:
-    """先停机再关机（``ORESORTER_ALLOW_POWER=1`` 时才真正执行 systemctl）。"""
+    """先停机再关机（``system.allow_power_actions=true`` 或环境变量 ``ORESORTER_ALLOW_POWER=1`` 时才真正执行 systemctl）。"""
     return get_runtime(request).shutdown(reboot=False)
 
 

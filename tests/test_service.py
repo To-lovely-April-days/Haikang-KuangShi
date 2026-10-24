@@ -1103,3 +1103,23 @@ def test_context_stop_returns_threads_to_baseline(tmp_path: Path, trained_model_
         read_json(c.data_dir / "state.json")["last_run_state"] == "running"
     ), "进程退出不改状态（下次按 auto_run 决定）"
     c.stop()  # 幂等
+
+
+def test_pipeline_derived_faults_are_clearable(ctx: AppContext):
+    """CAMERA_{id}_TIMEOUT：流水线已停且相机在线时由设备巡检清除；PIPELINE_ERROR 与 TIMEOUT 在操作员 stop() 时清除，
+    全部故障清除后状态机回到 stopped（不再需要重启服务）。"""
+    from oresorter.runtime.pipeline import PIPELINE_ERROR_FAULT, camera_fault_code
+
+    timeout_code = camera_fault_code(1, "TIMEOUT")
+    ctx.faults.set(timeout_code, "测试注入")
+    assert ctx.run_state == "fault"
+    ctx._poll_devices()  # 相机在线、无流水线 → 清除
+    assert not ctx.faults.has(timeout_code)
+    assert ctx.run_state == "stopped"
+
+    ctx.faults.set(PIPELINE_ERROR_FAULT, "测试注入")
+    ctx.faults.set(timeout_code, "测试注入")
+    assert ctx.run_state == "fault"
+    out = ctx.runtime.stop()
+    assert not ctx.faults.has(PIPELINE_ERROR_FAULT) and not ctx.faults.has(timeout_code)
+    assert out["run_state"] in {"fault", "stopped"} and ctx.run_state == "stopped"

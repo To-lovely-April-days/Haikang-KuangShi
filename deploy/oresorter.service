@@ -18,7 +18,7 @@ Environment=MVCAM_COMMON_RUNENV=/opt/MVS/lib
 Environment=LD_LIBRARY_PATH=/opt/MVS/lib/aarch64:/usr/lib/aarch64-linux-gnu/tegra
 Environment=ORESORTER_CONFIG=/opt/oresorter/config/jetson.yaml
 ExecStart=/opt/oresorter/.venv/bin/python -m oresorter.cli serve --config ${ORESORTER_CONFIG}
-# 主服务用 sd_notify 每 10 s 喂狗；30 s 无心跳 systemd 杀掉并拉起
+# 主服务用 sd_notify 按 WatchdogSec 的一半（15 s）喂狗；30 s 无心跳 systemd 杀掉并拉起
 WatchdogSec=30
 Restart=always
 RestartSec=3

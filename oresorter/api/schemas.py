@@ -97,11 +97,15 @@ class StateOut(_Out):
     jobs: list[dict[str, Any]]
     stats: dict[str, Any]
     version: str
+    pipeline: dict[str, Any] | None = None
 
 
 class SystemInfoOut(_Out):
     version: str
     hostname: str
+    platform: str | None = None
+    python: str | None = None
+    data_dir: str | None = None
     disk_total_mb: int
     disk_free_mb: int
     cpu_percent: float
@@ -109,6 +113,8 @@ class SystemInfoOut(_Out):
     temperatures_c: dict[str, float]
     gpu_percent: float | None
     ips: dict[str, list[str]]
+    pid: int | None = None
+    preview_max_fps: int | None = None
 
 
 # --------------------------------------------------------------------------------------
@@ -137,6 +143,8 @@ class StatsOut(_Out):
     per_class_total: dict[str, int]
     since: str | None = None
     elapsed_s: float
+    since_start: dict[str, Any] | None = None
+    pipelines: dict[str, Any] | None = None
 
 
 # --------------------------------------------------------------------------------------
@@ -198,6 +206,7 @@ class CameraParamsOut(_Out):
     end_px: int
     line_rate_hz: int
     trigger: Literal["internal", "encoder"]
+    nozzles: int | None = None
     limits: dict[str, Any] | None = None
 
 

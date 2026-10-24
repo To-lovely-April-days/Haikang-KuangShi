@@ -38,7 +38,7 @@ from oresorter.mcu import protocol as P
 from oresorter.mcu.link import LinkEvent, McuError, McuNack
 from oresorter.runtime.events import EventBus
 from oresorter.runtime.jobs import JobManager
-from oresorter.runtime.pipeline import CLASSIFIER_ERROR_FAULT
+from oresorter.runtime.pipeline import CLASSIFIER_ERROR_FAULT, camera_fault_code
 from oresorter.runtime.service import RuntimeService
 from oresorter.runtime.state import Event, IllegalTransition, RunState, StateMachine
 from oresorter.runtime.state import check_start_preconditions as _check_start
@@ -396,10 +396,14 @@ class AppContext:
         """设备巡检：相机 / 下位机连接状态变化 → 置/清故障（stopped 状态下也能反映掉线）。"""
         if self._stopping:
             return
+        running = {p.camera.id for p in self.pipelines.values()}
         for cam in self.cameras.values():
             code = f"CAMERA_{cam.id}_DISCONNECTED"
             if cam.connected:
                 self.faults.clear(code)
+                # 无帧超时是"运行中"的条件：流水线已停且相机在线，条件不再成立，巡检负责清除
+                if cam.id not in running:
+                    self.faults.clear(camera_fault_code(cam.id, "TIMEOUT"))
             elif not self.faults.has(code):
                 self.faults.set(code, "相机未连接")
         if self.mcu.connected:

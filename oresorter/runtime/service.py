@@ -62,10 +62,12 @@ from oresorter.ml.train import TrainError
 from oresorter.runtime import state as S
 from oresorter.runtime.jobs import JobConflict, JobType
 from oresorter.runtime.pipeline import (
+    PIPELINE_ERROR_FAULT,
     BackgroundUnavailable,
     CameraStreamError,
     Pipeline,
     PipelineError,
+    camera_fault_code,
 )
 from oresorter.runtime.state import Event, IllegalTransition, RunState
 from oresorter.runtime.tasks import (
@@ -447,6 +449,11 @@ class RuntimeService:
                 mcu_ack = False
                 log.warning("下发 STOP 失败", extra={"err": str(exc)})
             self._stop_pipelines()
+            # 操作员的"停止"视为确认：清除流水线派生的故障（无帧超时 / 连续处理失败），
+            # 全部故障清除后状态机回到 stopped，才允许再次 start；设备类故障仍由巡检 / 链路决定
+            for cam_id in self.ctx.cameras:
+                self.ctx.faults.clear(camera_fault_code(cam_id, "TIMEOUT"))
+            self.ctx.faults.clear(PIPELINE_ERROR_FAULT)
             new = self._sm.transition(Event.stop)
             return {"run_state": new.value, "mcu_ack": mcu_ack}
 

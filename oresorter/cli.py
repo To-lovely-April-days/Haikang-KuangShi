@@ -95,12 +95,14 @@ def cmd_serve(args: argparse.Namespace) -> int:
 
 def _healthy(ctx) -> bool:
     """喂狗前的健康检查：流水线对象若存在且声明不健康则不喂狗。设备掉线不算（有重连）。"""
-    pipeline = getattr(ctx, "pipeline", None)
-    if pipeline is not None and hasattr(pipeline, "healthy"):
-        try:
-            return bool(pipeline.healthy())
-        except Exception:
-            return False
+    pipelines = list(getattr(ctx, "pipelines", {}).values()) or [getattr(ctx, "pipeline", None)]
+    for pipeline in pipelines:
+        if pipeline is not None and hasattr(pipeline, "healthy"):
+            try:
+                if not pipeline.healthy():
+                    return False
+            except Exception:
+                return False
     return True
 
 
