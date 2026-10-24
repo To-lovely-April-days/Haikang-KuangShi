@@ -1,6 +1,501 @@
 {
   "components": {
     "schemas": {
+      "AcceptedOut": {
+        "additionalProperties": true,
+        "properties": {
+          "accepted": {
+            "default": true,
+            "title": "Accepted",
+            "type": "boolean"
+          }
+        },
+        "title": "AcceptedOut",
+        "type": "object"
+      },
+      "AppliedOut": {
+        "additionalProperties": true,
+        "properties": {
+          "applied": {
+            "default": true,
+            "title": "Applied",
+            "type": "boolean"
+          }
+        },
+        "title": "AppliedOut",
+        "type": "object"
+      },
+      "BackupIn": {
+        "additionalProperties": false,
+        "properties": {
+          "overwrite": {
+            "default": false,
+            "title": "Overwrite",
+            "type": "boolean"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "target_id": {
+            "title": "Target Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "target_id"
+        ],
+        "title": "BackupIn",
+        "type": "object"
+      },
+      "CameraOut": {
+        "additionalProperties": true,
+        "properties": {
+          "connected": {
+            "title": "Connected",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "ip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "nozzles": {
+            "title": "Nozzles",
+            "type": "integer"
+          },
+          "serial": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Serial"
+          },
+          "streaming": {
+            "default": false,
+            "title": "Streaming",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "connected",
+          "nozzles"
+        ],
+        "title": "CameraOut",
+        "type": "object"
+      },
+      "CameraParamsApplyOut": {
+        "additionalProperties": true,
+        "properties": {
+          "applied": {
+            "additionalProperties": true,
+            "title": "Applied",
+            "type": "object"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "applied"
+        ],
+        "title": "CameraParamsApplyOut",
+        "type": "object"
+      },
+      "CameraParamsOut": {
+        "additionalProperties": true,
+        "properties": {
+          "awb_mode": {
+            "enum": [
+              "off",
+              "once",
+              "continuous"
+            ],
+            "title": "Awb Mode",
+            "type": "string"
+          },
+          "end_px": {
+            "title": "End Px",
+            "type": "integer"
+          },
+          "exposure_us": {
+            "title": "Exposure Us",
+            "type": "number"
+          },
+          "height": {
+            "title": "Height",
+            "type": "integer"
+          },
+          "limits": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limits"
+          },
+          "line_rate_hz": {
+            "title": "Line Rate Hz",
+            "type": "integer"
+          },
+          "offset_x": {
+            "title": "Offset X",
+            "type": "integer"
+          },
+          "runtime_chunk_lines": {
+            "title": "Runtime Chunk Lines",
+            "type": "integer"
+          },
+          "start_px": {
+            "title": "Start Px",
+            "type": "integer"
+          },
+          "trigger": {
+            "enum": [
+              "internal",
+              "encoder"
+            ],
+            "title": "Trigger",
+            "type": "string"
+          },
+          "width": {
+            "title": "Width",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "awb_mode",
+          "exposure_us",
+          "width",
+          "offset_x",
+          "height",
+          "runtime_chunk_lines",
+          "start_px",
+          "end_px",
+          "line_rate_hz",
+          "trigger"
+        ],
+        "title": "CameraParamsOut",
+        "type": "object"
+      },
+      "CancelledOut": {
+        "additionalProperties": true,
+        "properties": {
+          "cancelled": {
+            "title": "Cancelled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "cancelled"
+        ],
+        "title": "CancelledOut",
+        "type": "object"
+      },
+      "CaptureIn": {
+        "additionalProperties": false,
+        "properties": {
+          "camera_id": {
+            "title": "Camera Id",
+            "type": "integer"
+          },
+          "max_frames": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": 50,
+            "title": "Max Frames"
+          },
+          "max_samples": {
+            "default": 200,
+            "title": "Max Samples",
+            "type": "integer"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "timeout_s": {
+            "default": 120.0,
+            "title": "Timeout S",
+            "type": "number"
+          }
+        },
+        "required": [
+          "camera_id"
+        ],
+        "title": "CaptureIn",
+        "type": "object"
+      },
+      "CapturePreviewIn": {
+        "additionalProperties": false,
+        "properties": {
+          "camera_id": {
+            "title": "Camera Id",
+            "type": "integer"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "settings": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "临时覆盖的采集设置（不持久化）",
+            "title": "Settings"
+          }
+        },
+        "required": [
+          "camera_id"
+        ],
+        "title": "CapturePreviewIn",
+        "type": "object"
+      },
+      "CapturePreviewOut": {
+        "additionalProperties": true,
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
+          },
+          "image_url": {
+            "title": "Image Url",
+            "type": "string"
+          },
+          "particles": {
+            "items": {
+              "$ref": "#/components/schemas/ParticleOut"
+            },
+            "title": "Particles",
+            "type": "array"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          }
+        },
+        "required": [
+          "image_url",
+          "particles",
+          "count"
+        ],
+        "title": "CapturePreviewOut",
+        "type": "object"
+      },
+      "ClassesIn": {
+        "additionalProperties": false,
+        "properties": {
+          "class_names": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Class Names",
+            "type": "array"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          }
+        },
+        "required": [
+          "class_names"
+        ],
+        "title": "ClassesIn",
+        "type": "object"
+      },
+      "ClassesOut": {
+        "additionalProperties": true,
+        "properties": {
+          "class_names": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Class Names",
+            "type": "array"
+          },
+          "max_models": {
+            "title": "Max Models",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "class_names",
+          "max_models"
+        ],
+        "title": "ClassesOut",
+        "type": "object"
+      },
+      "ClearedOut": {
+        "additionalProperties": true,
+        "properties": {
+          "deleted": {
+            "title": "Deleted",
+            "type": "integer"
+          },
+          "undo_batch": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Undo Batch"
+          }
+        },
+        "required": [
+          "deleted"
+        ],
+        "title": "ClearedOut",
+        "type": "object"
+      },
+      "FaultOut": {
+        "additionalProperties": true,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "detail": {
+            "default": "",
+            "title": "Detail",
+            "type": "string"
+          },
+          "since": {
+            "title": "Since",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "since"
+        ],
+        "title": "FaultOut",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
       "HealthOut": {
         "properties": {
           "ok": {
@@ -19,7 +514,773 @@
         "title": "HealthOut",
         "type": "object"
       },
+      "JobIdOut": {
+        "additionalProperties": true,
+        "properties": {
+          "job_id": {
+            "title": "Job Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id"
+        ],
+        "title": "JobIdOut",
+        "type": "object"
+      },
+      "JobOut": {
+        "additionalProperties": true,
+        "properties": {
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "job_id": {
+            "title": "Job Id",
+            "type": "string"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "title": "Meta",
+            "type": "object"
+          },
+          "model_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Id"
+          },
+          "progress": {
+            "title": "Progress",
+            "type": "number"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "status": {
+            "enum": [
+              "queued",
+              "running",
+              "succeeded",
+              "failed",
+              "cancelled"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "capture",
+              "train",
+              "deploy",
+              "valve_test",
+              "backup"
+            ],
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id",
+          "type",
+          "status",
+          "progress",
+          "created_at"
+        ],
+        "title": "JobOut",
+        "type": "object"
+      },
+      "ModelClassOut": {
+        "properties": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "sample_count": {
+            "title": "Sample Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "sample_count",
+          "enabled"
+        ],
+        "title": "ModelClassOut",
+        "type": "object"
+      },
+      "ModelCreateIn": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          }
+        },
+        "title": "ModelCreateIn",
+        "type": "object"
+      },
+      "ModelDeletedOut": {
+        "additionalProperties": true,
+        "properties": {
+          "deleted": {
+            "default": true,
+            "title": "Deleted",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "ModelDeletedOut",
+        "type": "object"
+      },
+      "ModelOut": {
+        "additionalProperties": true,
+        "properties": {
+          "algo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Algo"
+          },
+          "classes": {
+            "items": {
+              "$ref": "#/components/schemas/ModelClassOut"
+            },
+            "title": "Classes",
+            "type": "array"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "deployed": {
+            "default": false,
+            "title": "Deployed",
+            "type": "boolean"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "image_size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Size"
+          },
+          "metrics_summary": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metrics Summary"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "trained_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trained At"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "ModelOut",
+        "type": "object"
+      },
+      "ModelPatchIn": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          }
+        },
+        "title": "ModelPatchIn",
+        "type": "object"
+      },
+      "NozzleMapOut": {
+        "additionalProperties": true,
+        "properties": {
+          "end_px": {
+            "title": "End Px",
+            "type": "integer"
+          },
+          "nozzles": {
+            "title": "Nozzles",
+            "type": "integer"
+          },
+          "quotient": {
+            "title": "Quotient",
+            "type": "integer"
+          },
+          "ranges": {
+            "items": {
+              "$ref": "#/components/schemas/NozzleRangeOut"
+            },
+            "title": "Ranges",
+            "type": "array"
+          },
+          "remainder": {
+            "title": "Remainder",
+            "type": "integer"
+          },
+          "start_px": {
+            "title": "Start Px",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "start_px",
+          "end_px",
+          "nozzles",
+          "quotient",
+          "remainder",
+          "ranges"
+        ],
+        "title": "NozzleMapOut",
+        "type": "object"
+      },
+      "NozzleRangeOut": {
+        "properties": {
+          "nozzle": {
+            "title": "Nozzle",
+            "type": "integer"
+          },
+          "px_from": {
+            "title": "Px From",
+            "type": "integer"
+          },
+          "px_to": {
+            "title": "Px To",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "nozzle",
+          "px_from",
+          "px_to"
+        ],
+        "title": "NozzleRangeOut",
+        "type": "object"
+      },
+      "ParamsApplyOut": {
+        "additionalProperties": true,
+        "properties": {
+          "applied": {
+            "additionalProperties": true,
+            "title": "Applied",
+            "type": "object"
+          },
+          "mcu_ack": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "null=该分组不下发下位机；false=已持久化但未确认",
+            "title": "Mcu Ack"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "applied"
+        ],
+        "title": "ParamsApplyOut",
+        "type": "object"
+      },
+      "ParamsOut": {
+        "additionalProperties": true,
+        "properties": {
+          "blow": {
+            "additionalProperties": true,
+            "title": "Blow",
+            "type": "object"
+          },
+          "capture": {
+            "additionalProperties": true,
+            "title": "Capture",
+            "type": "object"
+          },
+          "clean": {
+            "additionalProperties": true,
+            "title": "Clean",
+            "type": "object"
+          },
+          "feed": {
+            "additionalProperties": true,
+            "title": "Feed",
+            "type": "object"
+          },
+          "limits": {
+            "additionalProperties": true,
+            "title": "Limits",
+            "type": "object"
+          },
+          "outputs": {
+            "additionalProperties": true,
+            "title": "Outputs",
+            "type": "object"
+          },
+          "valve": {
+            "additionalProperties": true,
+            "title": "Valve",
+            "type": "object"
+          }
+        },
+        "required": [
+          "valve",
+          "clean",
+          "feed",
+          "outputs",
+          "blow",
+          "capture",
+          "limits"
+        ],
+        "title": "ParamsOut",
+        "type": "object"
+      },
+      "ParticleOut": {
+        "properties": {
+          "area_px": {
+            "title": "Area Px",
+            "type": "integer"
+          },
+          "bbox": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Bbox",
+            "type": "array"
+          }
+        },
+        "required": [
+          "bbox",
+          "area_px"
+        ],
+        "title": "ParticleOut",
+        "type": "object"
+      },
+      "PowerOut": {
+        "additionalProperties": true,
+        "properties": {
+          "accepted": {
+            "default": true,
+            "title": "Accepted",
+            "type": "boolean"
+          },
+          "action": {
+            "anyOf": [
+              {
+                "enum": [
+                  "poweroff",
+                  "reboot"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Action"
+          }
+        },
+        "title": "PowerOut",
+        "type": "object"
+      },
+      "RequestIdBody": {
+        "additionalProperties": false,
+        "description": "所有写操作可带的幂等键（也可放在 ``X-Request-Id`` 头）。",
+        "properties": {
+          "request_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          }
+        },
+        "title": "RequestIdBody",
+        "type": "object"
+      },
+      "RestoredOut": {
+        "additionalProperties": true,
+        "properties": {
+          "restored": {
+            "title": "Restored",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "restored"
+        ],
+        "title": "RestoredOut",
+        "type": "object"
+      },
+      "RunOut": {
+        "additionalProperties": true,
+        "properties": {
+          "mcu_ack": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mcu Ack"
+          },
+          "run_state": {
+            "enum": [
+              "stopped",
+              "running",
+              "paused",
+              "sampling",
+              "fault"
+            ],
+            "title": "Run State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run_state",
+          "mcu_ack"
+        ],
+        "title": "RunOut",
+        "type": "object"
+      },
+      "SampleDeletedOut": {
+        "additionalProperties": true,
+        "properties": {
+          "deleted": {
+            "title": "Deleted",
+            "type": "boolean"
+          },
+          "undo_batch": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Undo Batch"
+          }
+        },
+        "required": [
+          "deleted"
+        ],
+        "title": "SampleDeletedOut",
+        "type": "object"
+      },
+      "SampleListOut": {
+        "additionalProperties": true,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SampleOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total",
+          "items"
+        ],
+        "title": "SampleListOut",
+        "type": "object"
+      },
+      "SampleOut": {
+        "additionalProperties": true,
+        "properties": {
+          "area_px": {
+            "title": "Area Px",
+            "type": "integer"
+          },
+          "bbox": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Bbox",
+            "type": "array"
+          },
+          "camera_id": {
+            "title": "Camera Id",
+            "type": "integer"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "deleted": {
+            "default": false,
+            "title": "Deleted",
+            "type": "boolean"
+          },
+          "image_url": {
+            "title": "Image Url",
+            "type": "string"
+          },
+          "sample_id": {
+            "title": "Sample Id",
+            "type": "string"
+          },
+          "thumb_url": {
+            "title": "Thumb Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sample_id",
+          "thumb_url",
+          "image_url",
+          "created_at",
+          "camera_id",
+          "bbox",
+          "area_px"
+        ],
+        "title": "SampleOut",
+        "type": "object"
+      },
+      "SamplesDeleteIn": {
+        "additionalProperties": false,
+        "properties": {
+          "ids": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Ids",
+            "type": "array"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          }
+        },
+        "required": [
+          "ids"
+        ],
+        "title": "SamplesDeleteIn",
+        "type": "object"
+      },
+      "SamplesDeletedOut": {
+        "additionalProperties": true,
+        "properties": {
+          "deleted": {
+            "title": "Deleted",
+            "type": "integer"
+          },
+          "undo_batches": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Undo Batches",
+            "type": "array"
+          }
+        },
+        "required": [
+          "deleted"
+        ],
+        "title": "SamplesDeletedOut",
+        "type": "object"
+      },
       "SavedOut": {
+        "additionalProperties": true,
         "properties": {
           "backup_path": {
             "anyOf": [
@@ -40,6 +1301,520 @@
         },
         "title": "SavedOut",
         "type": "object"
+      },
+      "SnapshotIn": {
+        "additionalProperties": false,
+        "properties": {
+          "height": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "采集行数；缺省取相机配置 height",
+            "title": "Height"
+          },
+          "max_width": {
+            "default": 2000,
+            "description": "缩放后最大宽度（像素）",
+            "title": "Max Width",
+            "type": "integer"
+          },
+          "overlay": {
+            "default": false,
+            "title": "Overlay",
+            "type": "boolean"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          }
+        },
+        "title": "SnapshotIn",
+        "type": "object"
+      },
+      "SnapshotOut": {
+        "additionalProperties": true,
+        "properties": {
+          "count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Count"
+          },
+          "height": {
+            "title": "Height",
+            "type": "integer"
+          },
+          "image_url": {
+            "title": "Image Url",
+            "type": "string"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          },
+          "width": {
+            "title": "Width",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "image_url",
+          "width",
+          "height"
+        ],
+        "title": "SnapshotOut",
+        "type": "object"
+      },
+      "StateOut": {
+        "additionalProperties": true,
+        "description": "``GET /state`` 全量快照（docs/03 §3）。",
+        "properties": {
+          "cameras": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Cameras",
+            "type": "array"
+          },
+          "deployed_model_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deployed Model Id"
+          },
+          "faults": {
+            "items": {
+              "$ref": "#/components/schemas/FaultOut"
+            },
+            "title": "Faults",
+            "type": "array"
+          },
+          "jobs": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Jobs",
+            "type": "array"
+          },
+          "mcu": {
+            "additionalProperties": true,
+            "title": "Mcu",
+            "type": "object"
+          },
+          "run_state": {
+            "enum": [
+              "stopped",
+              "running",
+              "paused",
+              "sampling",
+              "fault"
+            ],
+            "title": "Run State",
+            "type": "string"
+          },
+          "stats": {
+            "additionalProperties": true,
+            "title": "Stats",
+            "type": "object"
+          },
+          "time": {
+            "title": "Time",
+            "type": "string"
+          },
+          "uptime_total_s": {
+            "title": "Uptime Total S",
+            "type": "integer"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "time",
+          "uptime_total_s",
+          "run_state",
+          "deployed_model_id",
+          "cameras",
+          "mcu",
+          "faults",
+          "jobs",
+          "stats",
+          "version"
+        ],
+        "title": "StateOut",
+        "type": "object"
+      },
+      "StatsOut": {
+        "additionalProperties": true,
+        "description": "``state.stats`` / ``GET /run/stats``：速率为 int，延迟分位数为 float，累计值自本次 start 起。",
+        "properties": {
+          "blown_per_min": {
+            "title": "Blown Per Min",
+            "type": "integer"
+          },
+          "blown_total": {
+            "title": "Blown Total",
+            "type": "integer"
+          },
+          "chunk_latency_ms_max": {
+            "title": "Chunk Latency Ms Max",
+            "type": "number"
+          },
+          "chunk_latency_ms_p50": {
+            "title": "Chunk Latency Ms P50",
+            "type": "number"
+          },
+          "chunk_latency_ms_p99": {
+            "title": "Chunk Latency Ms P99",
+            "type": "number"
+          },
+          "chunks_total": {
+            "title": "Chunks Total",
+            "type": "integer"
+          },
+          "dropped_chunks": {
+            "title": "Dropped Chunks",
+            "type": "integer"
+          },
+          "elapsed_s": {
+            "title": "Elapsed S",
+            "type": "number"
+          },
+          "particles_per_min": {
+            "title": "Particles Per Min",
+            "type": "integer"
+          },
+          "particles_total": {
+            "title": "Particles Total",
+            "type": "integer"
+          },
+          "per_class_per_min": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Per Class Per Min",
+            "type": "object"
+          },
+          "per_class_total": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Per Class Total",
+            "type": "object"
+          },
+          "since": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since"
+          }
+        },
+        "required": [
+          "particles_per_min",
+          "blown_per_min",
+          "per_class_per_min",
+          "chunk_latency_ms_p50",
+          "chunk_latency_ms_p99",
+          "chunk_latency_ms_max",
+          "chunks_total",
+          "dropped_chunks",
+          "particles_total",
+          "blown_total",
+          "per_class_total",
+          "elapsed_s"
+        ],
+        "title": "StatsOut",
+        "type": "object"
+      },
+      "StoppedOut": {
+        "additionalProperties": true,
+        "properties": {
+          "stopped": {
+            "default": true,
+            "title": "Stopped",
+            "type": "boolean"
+          }
+        },
+        "title": "StoppedOut",
+        "type": "object"
+      },
+      "SystemInfoOut": {
+        "additionalProperties": true,
+        "properties": {
+          "cpu_percent": {
+            "title": "Cpu Percent",
+            "type": "number"
+          },
+          "disk_free_mb": {
+            "title": "Disk Free Mb",
+            "type": "integer"
+          },
+          "disk_total_mb": {
+            "title": "Disk Total Mb",
+            "type": "integer"
+          },
+          "gpu_percent": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gpu Percent"
+          },
+          "hostname": {
+            "title": "Hostname",
+            "type": "string"
+          },
+          "ips": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "title": "Ips",
+            "type": "object"
+          },
+          "mem_percent": {
+            "title": "Mem Percent",
+            "type": "number"
+          },
+          "temperatures_c": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "title": "Temperatures C",
+            "type": "object"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "version",
+          "hostname",
+          "disk_total_mb",
+          "disk_free_mb",
+          "cpu_percent",
+          "mem_percent",
+          "temperatures_c",
+          "gpu_percent",
+          "ips"
+        ],
+        "title": "SystemInfoOut",
+        "type": "object"
+      },
+      "TrainIn": {
+        "additionalProperties": false,
+        "properties": {
+          "classes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "省略 = 该模型所有有样本的类别",
+            "title": "Classes"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          }
+        },
+        "title": "TrainIn",
+        "type": "object"
+      },
+      "UndoDeleteOut": {
+        "additionalProperties": true,
+        "properties": {
+          "restored": {
+            "title": "Restored",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "restored"
+        ],
+        "title": "UndoDeleteOut",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "ValveResetOut": {
+        "additionalProperties": true,
+        "properties": {
+          "accepted": {
+            "default": true,
+            "title": "Accepted",
+            "type": "boolean"
+          },
+          "mcu_ack": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": true,
+            "title": "Mcu Ack"
+          }
+        },
+        "title": "ValveResetOut",
+        "type": "object"
+      },
+      "ValveTestCycleIn": {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "title": "From",
+            "type": "integer"
+          },
+          "interval_ms": {
+            "default": 200,
+            "title": "Interval Ms",
+            "type": "integer"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "to": {
+            "title": "To",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "from",
+          "to"
+        ],
+        "title": "ValveTestCycleIn",
+        "type": "object"
+      },
+      "ValveTestSingleIn": {
+        "additionalProperties": false,
+        "properties": {
+          "hole": {
+            "title": "Hole",
+            "type": "integer"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          }
+        },
+        "required": [
+          "hole"
+        ],
+        "title": "ValveTestSingleIn",
+        "type": "object"
       }
     }
   },
@@ -50,8 +1825,399 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/cameras": {
+      "get": {
+        "description": "全部相机的静态信息与连接状态。",
+        "operationId": "list_cameras_api_v1_cameras_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CameraOut"
+                  },
+                  "title": "Response List Cameras Api V1 Cameras Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Cameras",
+        "tags": [
+          "camera"
+        ]
+      }
+    },
+    "/api/v1/cameras/{camera_id}/awb-once": {
+      "post": {
+        "description": "做一次白平衡并锁定为 ``off``。",
+        "operationId": "awb_once_api_v1_cameras__camera_id__awb_once_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "camera_id",
+            "required": true,
+            "schema": {
+              "title": "Camera Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RequestIdBody"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppliedOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Awb Once",
+        "tags": [
+          "camera"
+        ]
+      }
+    },
+    "/api/v1/cameras/{camera_id}/nozzle-map": {
+      "get": {
+        "description": "像素 → 喷头映射表。",
+        "operationId": "nozzle_map_api_v1_cameras__camera_id__nozzle_map_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "camera_id",
+            "required": true,
+            "schema": {
+              "title": "Camera Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NozzleMapOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Nozzle Map",
+        "tags": [
+          "camera"
+        ]
+      }
+    },
+    "/api/v1/cameras/{camera_id}/params": {
+      "get": {
+        "description": "从相机实时读取参数 + 算力盒侧起止像素 / 块高 + ``limits``；相机离线 → 503。",
+        "operationId": "camera_params_api_v1_cameras__camera_id__params_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "camera_id",
+            "required": true,
+            "schema": {
+              "title": "Camera Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CameraParamsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Camera Params",
+        "tags": [
+          "camera"
+        ]
+      },
+      "put": {
+        "description": "校验持久化 → 下发相机；``start_px / end_px`` 立即影响喷头映射；相机离线时保存并在 warnings 说明。",
+        "operationId": "put_camera_params_api_v1_cameras__camera_id__params_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "camera_id",
+            "required": true,
+            "schema": {
+              "title": "Camera Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "description": "可编辑字段的部分或全部",
+                "title": "Patch",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CameraParamsApplyOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Put Camera Params",
+        "tags": [
+          "camera"
+        ]
+      }
+    },
+    "/api/v1/cameras/{camera_id}/snapshot": {
+      "post": {
+        "description": "单次采集，写入 ``/static/snapshots/``；``overlay=true`` 叠画分割框。",
+        "operationId": "snapshot_api_v1_cameras__camera_id__snapshot_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "camera_id",
+            "required": true,
+            "schema": {
+              "title": "Camera Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/SnapshotIn"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SnapshotOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Snapshot",
+        "tags": [
+          "camera"
+        ]
+      }
+    },
+    "/api/v1/capture/preview": {
+      "post": {
+        "description": "用（临时覆盖的）采集设置分割一帧并叠画，返回颗粒列表与叠画图 URL。",
+        "operationId": "capture_preview_api_v1_capture_preview_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapturePreviewIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapturePreviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Capture Preview",
+        "tags": [
+          "camera"
+        ]
+      }
+    },
+    "/api/v1/config/classes": {
+      "get": {
+        "description": "类别名称与模型数量上限。",
+        "operationId": "get_classes_api_v1_config_classes_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Classes",
+        "tags": [
+          "params"
+        ]
+      },
+      "put": {
+        "description": "整体替换类别名（需停止状态且所有模型未训练，否则 409）。",
+        "operationId": "put_classes_api_v1_config_classes_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClassesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Put Classes",
+        "tags": [
+          "params"
+        ]
+      }
+    },
     "/api/v1/health": {
       "get": {
+        "description": "存活探针（systemd watchdog / HMI 轮询）。",
         "operationId": "health_api_v1_health_get",
         "responses": {
           "200": {
@@ -71,18 +2237,1263 @@
         ]
       }
     },
-    "/api/v1/state": {
+    "/api/v1/jobs": {
       "get": {
-        "description": "全量状态快照。",
-        "operationId": "state_api_v1_state_get",
+        "description": "任务列表（含最近结束的历史）。",
+        "operationId": "list_jobs_api_v1_jobs_get",
+        "parameters": [
+          {
+            "description": "只列排队 / 运行中的任务",
+            "in": "query",
+            "name": "active",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "只列排队 / 运行中的任务",
+              "title": "Active",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/JobOut"
+                  },
+                  "title": "Response List Jobs Api V1 Jobs Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Jobs",
+        "tags": [
+          "models"
+        ]
+      }
+    },
+    "/api/v1/jobs/{job_id}": {
+      "get": {
+        "description": "单个任务；不存在 → 404。",
+        "operationId": "get_job_api_v1_jobs__job_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Job",
+        "tags": [
+          "models"
+        ]
+      }
+    },
+    "/api/v1/jobs/{job_id}/cancel": {
+      "post": {
+        "description": "请求取消；不存在 / 已结束 → ``cancelled=false``。",
+        "operationId": "cancel_job_api_v1_jobs__job_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RequestIdBody"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelledOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cancel Job",
+        "tags": [
+          "models"
+        ]
+      }
+    },
+    "/api/v1/models": {
+      "get": {
+        "description": "1..``system.max_models`` 全部编号（未创建的 ``created_at`` 为 null）。",
+        "operationId": "list_models_api_v1_models_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ModelOut"
+                  },
+                  "title": "Response List Models Api V1 Models Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Models",
+        "tags": [
+          "models"
+        ]
+      }
+    },
+    "/api/v1/models/current": {
+      "get": {
+        "description": "当前部署模型；无则 ``null``。",
+        "operationId": "current_model_api_v1_models_current_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ModelOut"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Current Model Api V1 Models Current Get"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Current Model",
+        "tags": [
+          "models"
+        ]
+      }
+    },
+    "/api/v1/models/{model_id}": {
+      "delete": {
+        "description": "删除全部参数与图片；当前部署 / 有任务在用 → 409。",
+        "operationId": "delete_model_api_v1_models__model_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "model_id",
+            "required": true,
+            "schema": {
+              "title": "Model Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelDeletedOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Model",
+        "tags": [
+          "models"
+        ]
+      },
+      "patch": {
+        "description": "修改名称 / 说明。",
+        "operationId": "patch_model_api_v1_models__model_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "model_id",
+            "required": true,
+            "schema": {
+              "title": "Model Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelPatchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Patch Model",
+        "tags": [
+          "models"
+        ]
+      },
+      "post": {
+        "description": "新建模型目录结构；已存在 → 409。",
+        "operationId": "create_model_api_v1_models__model_id__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "model_id",
+            "required": true,
+            "schema": {
+              "title": "Model Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/ModelCreateIn"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Model",
+        "tags": [
+          "models"
+        ]
+      }
+    },
+    "/api/v1/models/{model_id}/backup": {
+      "post": {
+        "description": "备份至另一个编号（整目录复制，后台任务）。",
+        "operationId": "backup_model_api_v1_models__model_id__backup_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "model_id",
+            "required": true,
+            "schema": {
+              "title": "Model Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackupIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobIdOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Backup Model",
+        "tags": [
+          "models"
+        ]
+      }
+    },
+    "/api/v1/models/{model_id}/classes/{cls}/capture": {
+      "post": {
+        "description": "连续采集（后台任务）；前置 ``run_state ∈ {stopped, paused}``，否则 409。",
+        "operationId": "start_capture_api_v1_models__model_id__classes__cls__capture_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "model_id",
+            "required": true,
+            "schema": {
+              "title": "Model Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "cls",
+            "required": true,
+            "schema": {
+              "title": "Cls",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptureIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobIdOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Capture",
+        "tags": [
+          "samples"
+        ]
+      }
+    },
+    "/api/v1/models/{model_id}/classes/{cls}/samples": {
+      "delete": {
+        "description": "清空该类（软删除为一个批次，可撤销一次）。",
+        "operationId": "clear_samples_api_v1_models__model_id__classes__cls__samples_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "model_id",
+            "required": true,
+            "schema": {
+              "title": "Model Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "cls",
+            "required": true,
+            "schema": {
+              "title": "Cls",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClearedOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Clear Samples",
+        "tags": [
+          "samples"
+        ]
+      },
+      "get": {
+        "description": "分页样本列表（按写入顺序升序）。",
+        "operationId": "list_samples_api_v1_models__model_id__classes__cls__samples_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "model_id",
+            "required": true,
+            "schema": {
+              "title": "Model Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "cls",
+            "required": true,
+            "schema": {
+              "title": "Cls",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 1000,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "include_deleted",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Include Deleted",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SampleListOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Samples",
+        "tags": [
+          "samples"
+        ]
+      }
+    },
+    "/api/v1/models/{model_id}/classes/{cls}/undo-delete": {
+      "post": {
+        "description": "撤销该类最近一次删除批次；无可撤销 → 404。",
+        "operationId": "undo_delete_api_v1_models__model_id__classes__cls__undo_delete_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "model_id",
+            "required": true,
+            "schema": {
+              "title": "Model Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "cls",
+            "required": true,
+            "schema": {
+              "title": "Cls",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RequestIdBody"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UndoDeleteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Undo Delete",
+        "tags": [
+          "samples"
+        ]
+      }
+    },
+    "/api/v1/models/{model_id}/deploy": {
+      "post": {
+        "description": "部署（后台任务）；未训练 → 409。",
+        "operationId": "deploy_model_api_v1_models__model_id__deploy_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "model_id",
+            "required": true,
+            "schema": {
+              "title": "Model Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RequestIdBody"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobIdOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Deploy Model",
+        "tags": [
+          "models"
+        ]
+      }
+    },
+    "/api/v1/models/{model_id}/metrics": {
+      "get": {
+        "description": "``metrics.json`` 全文（混淆矩阵、每类指标、训练曲线）。",
+        "operationId": "model_metrics_api_v1_models__model_id__metrics_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "model_id",
+            "required": true,
+            "schema": {
+              "title": "Model Id",
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
                   "additionalProperties": true,
-                  "title": "Response State Api V1 State Get",
+                  "title": "Response Model Metrics Api V1 Models  Model Id  Metrics Get",
                   "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Model Metrics",
+        "tags": [
+          "models"
+        ]
+      }
+    },
+    "/api/v1/models/{model_id}/train": {
+      "post": {
+        "description": "提交训练任务；已有训练 → 409；样本不足 → 400 ``VALIDATION``（``detail.insufficient``）。",
+        "operationId": "train_model_api_v1_models__model_id__train_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "model_id",
+            "required": true,
+            "schema": {
+              "title": "Model Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/TrainIn"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobIdOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Train Model",
+        "tags": [
+          "models"
+        ]
+      }
+    },
+    "/api/v1/params": {
+      "get": {
+        "description": "六个参数分组 + ``limits``（HMI 用它做输入范围）。",
+        "operationId": "get_params_api_v1_params_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParamsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Params",
+        "tags": [
+          "params"
+        ]
+      }
+    },
+    "/api/v1/params/{section}": {
+      "put": {
+        "description": "部分更新 ``valve | clean | feed | outputs | blow | capture``；越界 → 400 ``PARAM_OUT_OF_RANGE``\n且不做部分应用；``mcu_ack`` 为 null 表示该分组不下发下位机。",
+        "operationId": "put_params_api_v1_params__section__put",
+        "parameters": [
+          {
+            "description": "参数分组：valve | clean | feed | outputs | blow | capture；其它 → 404 NOT_FOUND",
+            "in": "path",
+            "name": "section",
+            "required": true,
+            "schema": {
+              "description": "参数分组：valve | clean | feed | outputs | blow | capture；其它 → 404 NOT_FOUND",
+              "enum": [
+                "valve",
+                "clean",
+                "feed",
+                "outputs",
+                "blow",
+                "capture"
+              ],
+              "title": "Section",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "description": "该分组的部分或全部字段",
+                "title": "Patch",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParamsApplyOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Put Params",
+        "tags": [
+          "params"
+        ]
+      }
+    },
+    "/api/v1/run/pause": {
+      "post": {
+        "description": "暂停（停吹气，继续分类统计）。",
+        "operationId": "run_pause_api_v1_run_pause_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RequestIdBody"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Run Pause",
+        "tags": [
+          "run"
+        ]
+      }
+    },
+    "/api/v1/run/start": {
+      "post": {
+        "description": "开始运行：前置条件不满足 → 409 ``CONFLICT``，``detail.reasons`` 给出原因枚举。",
+        "operationId": "run_start_api_v1_run_start_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RequestIdBody"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Run Start",
+        "tags": [
+          "run"
+        ]
+      }
+    },
+    "/api/v1/run/stats": {
+      "get": {
+        "description": "与 ``state.stats`` 同结构，另含 ``since_start`` 累计与各流水线统计。",
+        "operationId": "run_stats_api_v1_run_stats_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Run Stats",
+        "tags": [
+          "run"
+        ]
+      }
+    },
+    "/api/v1/run/stop": {
+      "post": {
+        "description": "停止；``fault`` 态下返回 200 ``run_state=fault``；``sampling`` 态下取消采样。",
+        "operationId": "run_stop_api_v1_run_stop_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RequestIdBody"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Run Stop",
+        "tags": [
+          "run"
+        ]
+      }
+    },
+    "/api/v1/samples/delete": {
+      "post": {
+        "description": "批量软删除：跨类别的 ids 按类别拆成多个撤销批次。",
+        "operationId": "delete_samples_api_v1_samples_delete_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SamplesDeleteIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SamplesDeletedOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Samples",
+        "tags": [
+          "samples"
+        ]
+      }
+    },
+    "/api/v1/samples/{sample_id}": {
+      "delete": {
+        "description": "软删除单个样本，返回可撤销批次号。",
+        "operationId": "delete_sample_api_v1_samples__sample_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sample_id",
+            "required": true,
+            "schema": {
+              "title": "Sample Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SampleDeletedOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Sample",
+        "tags": [
+          "samples"
+        ]
+      }
+    },
+    "/api/v1/samples/{sample_id}/restore": {
+      "post": {
+        "description": "恢复单个已软删除样本。",
+        "operationId": "restore_sample_api_v1_samples__sample_id__restore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sample_id",
+            "required": true,
+            "schema": {
+              "title": "Sample Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RequestIdBody"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestoredOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Restore Sample",
+        "tags": [
+          "samples"
+        ]
+      }
+    },
+    "/api/v1/state": {
+      "get": {
+        "description": "全量状态快照（HMI 启动与 WS 重连后调用）。",
+        "operationId": "state_api_v1_state_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StateOut"
                 }
               }
             },
@@ -97,15 +3508,14 @@
     },
     "/api/v1/system/info": {
       "get": {
+        "description": "版本、磁盘剩余、温度、GPU/CPU 占用、网口 IP。",
         "operationId": "system_info_api_v1_system_info_get",
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response System Info Api V1 System Info Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/SystemInfoOut"
                 }
               }
             },
@@ -118,9 +3528,76 @@
         ]
       }
     },
+    "/api/v1/system/reboot": {
+      "post": {
+        "description": "先停机再重启。",
+        "operationId": "system_reboot_api_v1_system_reboot_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RequestIdBody"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PowerOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "System Reboot",
+        "tags": [
+          "system"
+        ]
+      }
+    },
     "/api/v1/system/save": {
       "post": {
+        "description": "显式落盘并导出 ``config.backup.json``（配置本身已随每次修改即时持久化）。",
         "operationId": "system_save_api_v1_system_save_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RequestIdBody"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "content": {
@@ -131,11 +3608,252 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
           }
         },
         "summary": "System Save",
         "tags": [
           "system"
+        ]
+      }
+    },
+    "/api/v1/system/shutdown": {
+      "post": {
+        "description": "先停机再关机（``ORESORTER_ALLOW_POWER=1`` 时才真正执行 systemctl）。",
+        "operationId": "system_shutdown_api_v1_system_shutdown_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RequestIdBody"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PowerOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "System Shutdown",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/valve/reset": {
+      "post": {
+        "description": "喷阀复位。",
+        "operationId": "valve_reset_api_v1_valve_reset_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RequestIdBody"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValveResetOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Valve Reset",
+        "tags": [
+          "camera"
+        ]
+      }
+    },
+    "/api/v1/valve/test/cycle": {
+      "post": {
+        "description": "循环检测（后台任务，可取消 / ``/valve/test/stop``）。",
+        "operationId": "valve_test_cycle_api_v1_valve_test_cycle_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValveTestCycleIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobIdOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Valve Test Cycle",
+        "tags": [
+          "camera"
+        ]
+      }
+    },
+    "/api/v1/valve/test/single": {
+      "post": {
+        "description": "单阀检测；孔位范围见 ``limits.valve_test.hole``。",
+        "operationId": "valve_test_single_api_v1_valve_test_single_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValveTestSingleIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptedOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Valve Test Single",
+        "tags": [
+          "camera"
+        ]
+      }
+    },
+    "/api/v1/valve/test/stop": {
+      "post": {
+        "description": "停止喷阀检测。",
+        "operationId": "valve_test_stop_api_v1_valve_test_stop_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RequestIdBody"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoppedOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Valve Test Stop",
+        "tags": [
+          "camera"
         ]
       }
     }
