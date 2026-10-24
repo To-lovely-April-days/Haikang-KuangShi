@@ -32,7 +32,7 @@ def _lazy(module: str, func: str) -> Callable[[argparse.Namespace], int]:
             mod = importlib.import_module(module)
             fn = getattr(mod, func)
         except (ModuleNotFoundError, AttributeError) as exc:
-            log.error("子命令尚未实现", extra={"module": module, "func": func, "err": str(exc)})
+            log.error("子命令尚未实现", extra={"mod": module, "func": func, "err": str(exc)})
             return 2
         return int(fn(args) or 0)
 

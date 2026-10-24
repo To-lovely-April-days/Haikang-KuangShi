@@ -10,6 +10,7 @@ system:
   auto_run_on_boot: true
   log_level: INFO
   log_json: true
+  allow_power_actions: true
 cameras:
   - id: 1
     name: 相机1

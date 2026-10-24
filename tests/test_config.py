@@ -159,7 +159,7 @@ def test_limits_shape(tmp_path: Path):
     }
     assert lim["clean"] == {"time": [0, 200], "period": [0, 200], "count": [0, 5]}
     assert lim["feed"]["speed"] == [0, 100]
-    assert lim["valve_test"]["hole"] == [0, 64]
+    assert lim["valve_test"]["hole"] == [1, 64]
     cl = camera_limits()
     assert (
         cl["exposure_us"] == [3, 10000]

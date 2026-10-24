@@ -42,7 +42,7 @@ class SdNotify:
             self._sock.send(message.encode("utf-8"))
             return True
         except OSError as exc:
-            log.warning("sd_notify 发送失败", extra={"err": str(exc), "msg": message[:40]})
+            log.warning("sd_notify 发送失败", extra={"err": str(exc), "notify_msg": message[:40]})
             return False
 
     def ready(self) -> bool:

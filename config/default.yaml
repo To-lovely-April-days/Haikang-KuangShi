@@ -18,6 +18,8 @@ system:
   log_level: INFO
   log_json: false
   version: 1.0.0
+  allow_power_actions: false   # 真机 jetson.yaml 置 true 才会真正 poweroff/reboot
+  cors_origins: []             # HMI 与后端不同源（如独立静态站点）时填来源，如 ["http://192.168.1.20"]
 
 valve:                     # → 下位机（单位待定，见 docs/04 §9）
   open_time: 255           # 0~255

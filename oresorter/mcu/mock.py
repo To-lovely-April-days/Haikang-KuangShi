@@ -468,7 +468,7 @@ class MockMcuServer:
         for t in threads:
             t.join(_SERVER_JOIN_S)
             if t.is_alive():
-                log.error("Mock 下位机线程未能在时限内退出", extra={"thread": t.name})
+                log.error("Mock 下位机线程未能在时限内退出", extra={"thread_name": t.name})
         if srv is not None:
             log.info("Mock 下位机 TCP server 已停止", extra={"port": self.port})
 

@@ -408,7 +408,7 @@ class TcpMcuLink(McuLink):
                 continue  # 回调内 close()：不能 join 自己，当前线程随 stop 自行退出
             t.join(_THREAD_JOIN_S)
             if t.is_alive():
-                log.error("下位机线程未能在时限内退出", extra={"thread": t.name})
+                log.error("下位机线程未能在时限内退出", extra={"thread_name": t.name})
         # 兜底：线程都退出后再查一次，确保不残留打开的 socket
         with self._lock:
             conn = self._conn

@@ -34,6 +34,33 @@ def make_cfg(tmp_path: Path, **overrides) -> AppConfig:
     return AppConfig.model_validate(data)
 
 
+@pytest.fixture(autouse=True)
+def _restore_logging():
+    """每个测试后恢复根 logger 与常见库 logger 的级别/handler。
+
+    ``oresorter.cli.main`` / ``oresorter.ml.train.main`` 会调 ``setup_logging`` 重置根 logger，
+    不恢复会把 INFO 级别与绑定在旧 stderr 上的 handler 泄漏给后续测试文件。
+    """
+    import logging
+
+    root = logging.getLogger()
+    saved_level, saved_handlers = root.level, list(root.handlers)
+    names = ("uvicorn.access", "PIL", "matplotlib", "httpx", "httpcore", "oresorter.runtime.jobs")
+    saved_lib = {n: logging.getLogger(n).level for n in names}
+    try:
+        yield
+    finally:
+        root.setLevel(saved_level)
+        for h in list(root.handlers):
+            if h not in saved_handlers:
+                root.removeHandler(h)
+        for h in saved_handlers:
+            if h not in root.handlers:
+                root.addHandler(h)
+        for n, lvl in saved_lib.items():
+            logging.getLogger(n).setLevel(lvl)
+
+
 @pytest.fixture
 def tmp_data(tmp_path: Path) -> Path:
     return tmp_path / "data"

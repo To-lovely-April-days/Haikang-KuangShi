@@ -25,6 +25,36 @@ _STD_ATTRS = frozenset(
     | {"message", "asctime", "taskName", "color_message"}  # color_message 来自 uvicorn
 )
 
+# ``extra`` 中不能使用的键（标准库 ``Logger.makeRecord`` 会对这些键抛 KeyError）。
+RESERVED_EXTRA_KEYS: frozenset[str] = frozenset(
+    logging.LogRecord("x", logging.INFO, "x", 0, "", (), None).__dict__.keys()
+    | {"message", "asctime"}
+)
+SAFE_EXTRA_PREFIX = "x_"
+
+
+class SafeLogger(logging.Logger):
+    """``extra`` 里撞上 LogRecord 保留键（message / thread / module / msg …）时改名为 ``x_<key>``，
+    而不是像标准库那样抛 KeyError 把业务线程炸掉。正确的做法仍然是不要用保留键
+    （tests/test_log.py 会静态扫描源码），这里只是最后一道兜底。"""
+
+    def makeRecord(  # noqa: N802 — 覆盖标准库方法名
+        self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None, sinfo=None
+    ):
+        if extra:
+            bad = [k for k in extra if k in RESERVED_EXTRA_KEYS]
+            if bad:
+                extra = {
+                    (SAFE_EXTRA_PREFIX + k if k in RESERVED_EXTRA_KEYS else k): v
+                    for k, v in extra.items()
+                }
+        return super().makeRecord(name, level, fn, lno, msg, args, exc_info, func, extra, sinfo)
+
+
+# 在任何业务 logger 创建之前安装（本模块是全包最早被导入的模块之一）
+if logging.getLoggerClass() is logging.Logger:
+    logging.setLoggerClass(SafeLogger)
+
 
 def _extra_fields(record: logging.LogRecord) -> dict[str, Any]:
     return {

@@ -251,6 +251,13 @@ class SystemConfig(StrictModel):
     log_level: str = "INFO"
     log_json: bool = False
     version: str = "1.0.0"
+    allow_power_actions: bool = Field(
+        False, description="POST /system/shutdown|reboot 是否真正执行 systemctl（开发机保持 false）"
+    )
+    cors_origins: list[str] = Field(
+        default_factory=list,
+        description="HMI 跨源部署时允许的来源列表（空 = 不挂 CORS 中间件，同源部署）",
+    )
 
     @model_validator(mode="after")
     def _check(self) -> SystemConfig:
@@ -349,7 +356,9 @@ def build_limits(cfg: AppConfig) -> dict[str, Any]:
         "valve": model_limits(ValveParams),
         "clean": model_limits(CleanParams, ["time", "period", "count"]),
         "feed": {"speed": [FEED_SPEED_MIN, FEED_SPEED_MAX], "count": cfg.system.feeder_count},
-        "valve_test": {"hole": [0, cfg.total_nozzles]},
+        "valve_test": {
+            "hole": [1, cfg.total_nozzles]
+        },  # 配置项 hole=0 表示“未选”，HMI 输入范围 1~N
         "blow": model_limits(BlowParams),
         "capture": model_limits(CaptureSettings),
     }

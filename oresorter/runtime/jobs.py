@@ -519,7 +519,7 @@ class JobManager:
         """``_finish_locked`` 之后、仍持有 ``_emit_lock`` 时调用：记日志、补发进度、发结束事件、唤醒等待者。"""
         log.info(
             "任务结束",
-            extra={"job_id": out.job_id, "status": out.status.value, "message": out.message},
+            extra={"job_id": out.job_id, "status": out.status.value, "reason": out.message},
         )
         if out.pending is not None:
             self._emit(out.pending)
