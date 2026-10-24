@@ -1,0 +1,17 @@
+# /etc/netplan/01-oresorter.yaml —— 两网口静态 IP（docs/01 §3 拓扑）
+# 先用 `ip link` 确认 TW-T201P 上 1G / 5G 网口的实际名称（示例为 eth0 / eth1），改好后：
+#   sudo netplan generate && sudo netplan apply
+# 注意：Type-C 口的 192.168.55.1 是刷机口，不要动。
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    eth0:                       # 1G 口 → 工业交换机：HMI 192.168.1.20、下位机 192.168.1.30
+      dhcp4: false
+      addresses: [192.168.1.10/24]
+      optional: true
+    eth1:                       # 5G 口 → 相机直连（相机 192.168.10.10，MTU 9000）
+      dhcp4: false
+      addresses: [192.168.10.1/24]
+      mtu: 9000
+      optional: true

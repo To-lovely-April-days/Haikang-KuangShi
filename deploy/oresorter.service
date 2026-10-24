@@ -1,0 +1,37 @@
+# /etc/systemd/system/oresorter.service — 矿石智能分选机算力盒后端
+# 安装：deploy/install_jetson.sh 会按实际用户/路径渲染并安装本文件。
+[Unit]
+Description=oresorter - 矿石智能分选机算力盒后端
+Documentation=file:///opt/oresorter/README.md
+After=network-online.target oresorter-tune.service
+Wants=network-online.target oresorter-tune.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=notify
+NotifyAccess=main
+User=__USER__
+Group=__GROUP__
+WorkingDirectory=/opt/oresorter
+Environment=PYTHONUNBUFFERED=1
+Environment=MVCAM_COMMON_RUNENV=/opt/MVS/lib
+Environment=LD_LIBRARY_PATH=/opt/MVS/lib/aarch64:/usr/lib/aarch64-linux-gnu/tegra
+Environment=ORESORTER_CONFIG=/opt/oresorter/config/jetson.yaml
+ExecStart=/opt/oresorter/.venv/bin/python -m oresorter.cli serve --config ${ORESORTER_CONFIG}
+# 主服务用 sd_notify 每 10 s 喂狗；30 s 无心跳 systemd 杀掉并拉起
+WatchdogSec=30
+Restart=always
+RestartSec=3
+TimeoutStartSec=120
+TimeoutStopSec=15
+KillSignal=SIGINT
+Nice=-5
+LimitNOFILE=65536
+LimitMEMLOCK=infinity
+# 日志走 journald；需要落盘时 journalctl -u oresorter 或开启持久化 journal
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=oresorter
+
+[Install]
+WantedBy=multi-user.target

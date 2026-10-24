@@ -1,0 +1,14 @@
+# /etc/systemd/system/oresorter-tune.service — 开机锁频与网口调优（root，oneshot）
+[Unit]
+Description=oresorter - Jetson 锁频与网络调优
+After=network-online.target
+Wants=network-online.target
+Before=oresorter.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/oresorter/deploy/tune_jetson.sh
+
+[Install]
+WantedBy=multi-user.target
