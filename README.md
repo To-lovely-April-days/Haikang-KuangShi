@@ -68,10 +68,18 @@ uv pip install --python .venv/bin/python -r requirements-lock.txt   # 或 requir
 .venv/bin/python scripts/make_synthetic.py --out /tmp/synth --classes A,B,C --per-class 50 --frames 5   # 合成样本与大图
 .venv/bin/python -m oresorter.cli eval --folder /path/to/samples          # 子目录即类别（支持客户的 a/ b/ c/ 目录），交叉验证 + 混淆矩阵
 .venv/bin/python -m oresorter.cli replay --images /tmp/synth/frames --model-dir ./data/models/1   # 回放大图：分割 → 分类，输出标注图与报告
+#   --chunk-lines 512   按块回放（128~4096）：切块经 ChunkStitcher 走运行时同一路径，每张图末尾加一帧冲洗帧（stitch.frames = 块数 + 1）
+#   --learn-bg 3        用前 N 张图学习逐列背景（N 大于图片数报错）；省略 = 固定颜色背景 capture.bg_color
+#   --out DIR           默认图片目录同级的 replay_out/；不能是图片目录本身或其子目录；输入里 *_overlay.jpg 会被跳过
+#   产物：{stem}_overlay.jpg（同名不同扩展名 → {stem}_{ext}_overlay.jpg）+ replay_report.json（v2：每图颗粒/每类数量/耗时分位数；
+#   目录含 labels.json 时另给 IoU≥0.5 的召回/误检与分类准确率）；退出码 0 成功，1 参数错误或有图片回放失败
 .venv/bin/python -m oresorter.cli learn-bg --config config/dev.yaml --camera 1                    # 用空皮带帧学习逐列背景
 .venv/bin/python -m oresorter.cli build-engine --model-dir /data/oresorter/models/1               # Jetson：ONNX → TensorRT 引擎
 .venv/bin/python scripts/export_openapi.py --check                                                # 校验 docs/openapi.json 与代码一致
 .venv/bin/python scripts/soak_test.py --duration 1h --interval 60                                  # Mock 下老化：RSS / 线程 / 延迟 / 丢块
+#   其它参数：--out soak.jsonl|.csv  --model-dir D  --speed 0（不限速） --rss-limit-mb 50  --max-dropped 0  --log-level INFO
+#   退出码：0 合格；2 超限（RSS 增长超限 / 线程泄漏 / 运行期间故障 / 结束时非 running 或块数停滞 / 丢块超 --max-dropped）；
+#           1 参数非法、准备阶段（训练/部署/启动）失败或运行前被中断。汇总写到记录文件同目录的 soak_summary.json
 ```
 
 ## 配置
@@ -80,19 +88,23 @@ uv pip install --python .venv/bin/python -r requirements-lock.txt   # 或 requir
 - 运行期由 HMI 修改的参数（喷阀、清灰、给料、输出、吹气、采集设置、相机可编辑项）原子写入 `{data_dir}/config.json`，重启后覆盖 yaml 中的同名项；网络、相机类型等部署项始终以 yaml 为准。
 - 全部取值范围见 `docs/01_技术选型与架构.md` §9，越界请求会被拒绝并返回原因（`PARAM_OUT_OF_RANGE`）。
 - 模型数量与类别名可配置（默认 7 个模型、类别 A~G），HMI 通过 `GET /api/v1/config/classes` 读取。
+- `system.allow_power_actions`（默认 false，`jetson.yaml` 为 true）：为 true 时 `POST /system/shutdown|reboot` 才真正执行 `systemctl poweroff|reboot`，否则只记日志（开发机 / 测试安全；兼容环境变量 `ORESORTER_ALLOW_POWER=1`）。
+- `system.cors_origins`（默认 `[]`）：HMI 与后端同源部署（直接访问算力盒 IP:8000，或由 `/static` 托管 HMI）时留空；HMI 跨源部署时填来源列表（如 `["http://192.168.1.20"]`），非空才挂 CORS 中间件。
 
 ## 数据目录（`system.data_dir`）
 
 ```
 config.json / config.backup.json   运行参数 / 显式保存的备份
-state.json                         当前部署模型、累计运行时长、背景版本
+runtime_config.yaml                训练子进程读取的生效配置快照（每次训练前重写）
+state.json                         当前部署模型、累计运行时长、背景版本、最后运行状态
 background/cam1.npz                逐列背景模型
 models/{id}/meta.json              名称、说明、类别、样本计数、训练信息、指标摘要
 models/{id}/samples/{cls}/*.png    RGBA 样本（alpha 即 mask）+ 同名 .json 元数据
 models/{id}/samples/.trash/        软删除（可撤销），journal.json 记录删除批次
 models/{id}/thumbs/{cls}/*.jpg     缩略图（长边 160）
-models/{id}/train/                 best.pt、model.onnx、model.plan、metrics.json、train.log、progress.json
-snapshots/ previews/ logs/ captures/
+models/{id}/train/                 best.pt、model.onnx、model.plan、metrics.json、train.log、progress.json、error.json、subprocess.log
+snapshots/ previews/               单次采集 / 采集预览叠画图（只保留最近 system.max_snapshots_kept 张；/static 只放行这两类与 models 的 thumbs/samples）
+logs/ captures/                    logs 下有 soak_test 的 soak_*.jsonl 与 soak_summary.json
 ```
 
 ## 测试与质量门禁
@@ -111,7 +123,7 @@ curl http://127.0.0.1:8000/api/v1/health
 
 - PyTorch / torchvision 必须用 NVIDIA 为 JetPack 编译的 wheel（见 `docs/01` §10），放到 `backend/wheels/` 后再运行安装脚本。
 - 海康 MVS SDK 安装到 `/opt/MVS`；环境变量与网口调优见 `CLAUDE.md`「Jetson 环境提示」、`deploy/tune_jetson.sh`、`deploy/netplan-example.yaml`。
-- `oresorter.service` 为 `Type=notify` + `WatchdogSec=30`，主服务每 10 s 喂狗，流水线不健康时停止喂狗由 systemd 拉起。
+- `oresorter.service` 为 `Type=notify` + `WatchdogSec=30`，主服务按 `WatchdogSec` 的一半喂狗（`WATCHDOG_USEC/2`，即 15 s），流水线不健康时停止喂狗由 systemd 拉起。
 - TensorRT 引擎（`model.plan`）绑定设备与 TensorRT 版本，在算力盒上由首次部署自动生成（或 `cli build-engine`），不要提交到仓库。
 
 ## 与其他同事的接口

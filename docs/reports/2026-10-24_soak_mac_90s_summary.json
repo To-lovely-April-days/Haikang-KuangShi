@@ -1,0 +1,159 @@
+{
+  "version": "0.1.0",
+  "config": "/Users/huanhuanremote/Desktop/Project/矿石视觉检测/backend/config/dev.yaml",
+  "out": "/private/tmp/claude-501/-Users-huanhuanremote-Desktop-Project-------/62f1f39b-3f24-43a2-b7b2-2e1deb050a2e/scratchpad/soak/soak_90s.jsonl",
+  "format": "jsonl",
+  "started_at": "2026-10-24T21:49:54+11:00",
+  "ended_at": "2026-10-24T21:51:24+11:00",
+  "stopped_by": "deadline",
+  "duration_requested_s": 90.0,
+  "duration_actual_s": 90.009,
+  "interval_s": 15.0,
+  "speed": 1.0,
+  "model": {
+    "id": 1,
+    "source": "quick-train",
+    "temporary": true,
+    "backend": "onnx",
+    "classes": [
+      "A",
+      "B",
+      "C"
+    ],
+    "image_size": 128
+  },
+  "samples": 6,
+  "rss": {
+    "start_mb": 234.58,
+    "baseline_mb": 1196.81,
+    "end_mb": 1111.27,
+    "max_mb": 1197.34,
+    "growth_mb": -85.54,
+    "peak_growth_mb": 0.53,
+    "limit_mb": 50.0
+  },
+  "threads": {
+    "baseline": 1,
+    "running_max": 6,
+    "end": 1,
+    "leaked": []
+  },
+  "chunks_total": 1580,
+  "dropped_total": 0,
+  "latency_p99_ms": 101.18,
+  "rss_growth_mb": -85.54,
+  "threads_leaked": 0,
+  "stats": {
+    "particles_per_min": 6069,
+    "blown_per_min": 6069,
+    "per_class_per_min": {
+      "A": 109,
+      "B": 0,
+      "C": 5960,
+      "D": 0,
+      "E": 0,
+      "F": 0,
+      "G": 0
+    },
+    "chunk_latency_ms_p50": 55.43,
+    "chunk_latency_ms_p99": 101.18,
+    "chunk_latency_ms_max": 130.56,
+    "chunks_total": 1580,
+    "dropped_chunks": 0,
+    "particles_total": 9122,
+    "blown_total": 9122,
+    "per_class_total": {
+      "A": 168,
+      "B": 0,
+      "C": 8954,
+      "D": 0,
+      "E": 0,
+      "F": 0,
+      "G": 0
+    },
+    "since": "2026-10-24T21:49:54+11:00",
+    "elapsed_s": 90.0
+  },
+  "pipelines": {
+    "1": {
+      "frames": 1581,
+      "dropped": 0,
+      "resets": 0,
+      "deferred": 1151,
+      "skipped_seen": 4569,
+      "truncated": 0,
+      "selected": 9132,
+      "lost": 0,
+      "camera_id": 1,
+      "mode": "sort",
+      "running": true,
+      "queue_len": 1,
+      "queue_dropped": 0,
+      "send_queue_len": 0,
+      "send_dropped": 0,
+      "chunks": 1580,
+      "errors": 0,
+      "consecutive_errors": 0,
+      "blown": 9122,
+      "eject_sent": 9122,
+      "eject_failed": 0,
+      "eject_skipped": 0,
+      "last_latency_ms": 61.35,
+      "blow_enabled": true,
+      "predict_errors": 0,
+      "consecutive_predict_errors": 0,
+      "healthy": true
+    }
+  },
+  "cameras": {
+    "1": {
+      "id": 1,
+      "connected": true,
+      "streaming": true,
+      "line_rate_hz": 9000,
+      "chunks_total": 1582,
+      "dropped_chunks": 0,
+      "reconnects": 0,
+      "errors": 0,
+      "chunks_per_s": 17.58
+    }
+  },
+  "mcu": {
+    "connected": true,
+    "state": "running",
+    "queue_len": 0,
+    "counters": {
+      "eject_rx": 9122,
+      "eject_done": 3370,
+      "eject_dropped": 5752,
+      "period_ms": 1000
+    },
+    "ack_timeouts": 0,
+    "reconnects": 0
+  },
+  "faults_seen": {},
+  "startup_faults": {},
+  "faults_end": [],
+  "checks": {
+    "rss_ok": true,
+    "threads_ok": true,
+    "faults_ok": true,
+    "running_ok": true,
+    "running_detail": {
+      "run_state_end": "running",
+      "chunks_grew": true,
+      "growth_gap_s": 1.0
+    },
+    "dropped_ok": null,
+    "max_dropped": null
+  },
+  "failed_checks": [],
+  "passed": true,
+  "exit_code": 0,
+  "error": null,
+  "notes": [
+    "相机 [1] 列背景未学习：capture.bg_mode column → color，bg_color=[0, 0, 255]",
+    "blow.classes 为空 → ['A', 'B', 'C']，min_confidence → 0（仅本次运行，不落盘）"
+  ],
+  "summary_path": "/private/tmp/claude-501/-Users-huanhuanremote-Desktop-Project-------/62f1f39b-3f24-43a2-b7b2-2e1deb050a2e/scratchpad/soak/soak_summary.json"
+}
