@@ -1,0 +1,23 @@
+# 开发机（Mac/PC，Python 3.10）。精确锁定版本见 requirements-lock.txt（uv pip freeze 生成）。
+# 运行时核心
+numpy>=1.26,<2.3
+opencv-python-headless>=4.9
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic>=2.6,<3
+pyyaml>=6.0
+pillow>=10.0
+psutil>=5.9
+# 训练 / 推理（开发机走 PyPI 官方 wheel，CPU/MPS）
+torch>=2.2
+torchvision>=0.17
+onnx>=1.15
+onnxruntime>=1.17
+scikit-learn>=1.4
+# 开发与测试
+pytest>=8.0
+pytest-timeout>=2.3
+httpx>=0.27
+websockets>=12.0
+ruff>=0.4
+black>=24.0

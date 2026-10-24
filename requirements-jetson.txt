@@ -1,0 +1,20 @@
+# Jetson Orin Nano（JetPack 6.x，Python 3.10）。
+# PyTorch / torchvision 必须用 NVIDIA 为 JetPack 编译的 wheel（见 docs/01 §10），
+# 下载后放入内网制品库或本机 wheels/ 目录，用：
+#   pip install -r requirements-jetson.txt --find-links ./wheels --no-index   # 完全离线
+# TensorRT、CUDA、cuDNN 由 JetPack 自带（python3-libnvinfer），不在此列。
+numpy>=1.26,<2.3
+opencv-python-headless>=4.9
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic>=2.6,<3
+pyyaml>=6.0
+pillow>=10.0
+psutil>=5.9
+onnx>=1.15
+scikit-learn>=1.4
+# --- NVIDIA 专用 wheel（文件名以实际下载为准，示例为 JetPack 6.1 / torch 2.5）---
+# torch @ file:./wheels/torch-2.5.0a0+872d972e41.nv24.08-cp310-cp310-linux_aarch64.whl
+# torchvision @ file:./wheels/torchvision-0.20.0-cp310-cp310-linux_aarch64.whl
+torch>=2.2
+torchvision>=0.17

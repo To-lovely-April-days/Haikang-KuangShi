@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+# 运行数据（默认 data_dir；开发配置指向 ./data）
+data/
+*.plan
+*.engine
+# 本地 wheel 制品库
+wheels/
+# 系统
+.DS_Store
+# 临时
+*.log
+/tmp/

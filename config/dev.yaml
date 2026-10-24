@@ -1,0 +1,17 @@
+# 开发机：Mock 相机 + Mock 下位机，数据放在仓库下 ./data（已 gitignore）。
+base: default.yaml
+system:
+  data_dir: ./data
+  mcu_kind: mock
+  auto_run_on_boot: false
+  log_level: DEBUG
+  min_free_disk_mb: 100
+cameras:
+  - id: 1
+    name: 相机1(Mock)
+    kind: mock
+    mock:
+      source_dir: null
+      speed: 1.0           # 按真实行频节奏回放（9 kHz / 512 行 ≈ 17.6 块/s）
+      seed: 42
+      particles_per_chunk: 6

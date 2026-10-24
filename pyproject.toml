@@ -1,0 +1,88 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "oresorter"
+version = "0.1.0"
+description = "矿石智能分选机 — 算力盒后端（Jetson Orin Nano）"
+readme = "README.md"
+requires-python = ">=3.10,<3.11"
+license = { text = "Proprietary" }
+dependencies = [
+  "numpy>=1.26,<2.3",
+  "opencv-python-headless>=4.9",
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.29",
+  "pydantic>=2.6,<3",
+  "pyyaml>=6.0",
+  "pillow>=10.0",
+  "psutil>=5.9",
+]
+
+[project.optional-dependencies]
+ml = [
+  "torch>=2.2",
+  "torchvision>=0.17",
+  "onnx>=1.15",
+  "onnxruntime>=1.17",
+  "scikit-learn>=1.4",
+]
+dev = [
+  "pytest>=8.0",
+  "pytest-timeout>=2.3",
+  "httpx>=0.27",
+  "websockets>=12.0",
+  "ruff>=0.4",
+  "black>=24.0",
+]
+
+[project.scripts]
+oresorter = "oresorter.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["oresorter*"]
+
+[tool.setuptools.package-data]
+"oresorter.ml.weights" = ["*.pth", "README.md"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+exclude = ["oresorter/camera/hik_sdk", ".venv", "build", "dist"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "C4", "SIM", "RUF"]
+ignore = [
+  "E501",   # 行长由 black 控制
+  "RUF001", "RUF002", "RUF003",  # 中文标点
+  "B008",   # FastAPI Depends()
+  "N818",   # 异常类名后缀
+  "N812",   # `from oresorter.mcu import protocol as P` 惯用别名
+  "SIM108", # 三元表达式不强制
+  "UP007",  # 保留 Optional[X] 写法亦可
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011", "RUF012"]
+"scripts/*" = ["E402"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["oresorter"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+timeout = 300
+markers = [
+  "jetson: 仅在 Jetson 真机上运行（TensorRT、海康 SDK）",
+  "slow: 耗时较长的测试（训练、老化）",
+  "hardware: 需要真实相机或下位机",
+]
+filterwarnings = [
+  "ignore::DeprecationWarning",
+]

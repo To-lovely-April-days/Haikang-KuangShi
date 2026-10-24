@@ -1,0 +1,29 @@
+# 真机：图为 TW-T201P + 海康 MV-CL043-A1GC + 下位机 TCP。
+base: default.yaml
+system:
+  data_dir: /data/oresorter
+  api_host: 0.0.0.0
+  api_port: 8000
+  mcu_kind: tcp
+  mcu_host: 192.168.1.30
+  mcu_port: 5000
+  auto_run_on_boot: true
+  log_level: INFO
+  log_json: true
+cameras:
+  - id: 1
+    name: 相机1
+    kind: hik
+    ip: 192.168.10.10
+    serial: null
+    nozzles: 64
+    awb_mode: once
+    exposure_us: 50
+    width: 4096
+    offset_x: 0
+    height: 4096
+    runtime_chunk_lines: 512
+    start_px: 0
+    end_px: 4096
+    line_rate_hz: 9000
+    trigger: internal      # 现场有编码器后改 encoder

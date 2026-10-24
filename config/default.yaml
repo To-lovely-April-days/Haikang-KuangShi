@@ -1,0 +1,110 @@
+# 全部默认值（与 docs/01 §9 一致）。其他 yaml 用 `base: default.yaml` 继承并覆盖。
+# 注意：列表（如 cameras、feed.speeds、blow.classes）在覆盖时整体替换，不做逐项合并。
+system:
+  max_models: 7
+  class_names: [A, B, C, D, E, F, G]
+  feeder_count: 9
+  data_dir: /data/oresorter
+  api_host: 0.0.0.0
+  api_port: 8000
+  mcu_kind: tcp            # tcp | mock
+  mcu_host: 192.168.1.30
+  mcu_port: 5000
+  auto_run_on_boot: true
+  preview_max_fps: 10
+  preview_jpeg_quality: 70
+  min_free_disk_mb: 2048
+  max_snapshots_kept: 50
+  log_level: INFO
+  log_json: false
+  version: 1.0.0
+
+valve:                     # → 下位机（单位待定，见 docs/04 §9）
+  open_time: 255           # 0~255
+  hold: 255                # 0~255
+  reblow: 20               # 0~50
+  delay: 376               # 0~800
+
+valve_test:
+  hole: 0                  # 0~(相机数×64)
+
+clean:                     # → 下位机
+  time: 20                 # 0~200
+  period: 200              # 0~200
+  count: 5                 # 0~5
+  enabled: false
+
+feed:                      # → 下位机，9 路给料速度 0~100（范围待确认）
+  speeds: [50, 50, 50, 50, 50, 50, 50, 50, 50]
+
+outputs:                   # → 下位机，手动开关
+  conveyor: false
+  valve: false
+  feeder: false
+
+blow:                      # 后端吹气决策（调整页）
+  classes: []              # 需要吹气的类别
+  min_confidence: 128      # 0~255 → 0~1
+  size_min: 0              # 0~255 → 面积范围
+  size_max: 255
+
+capture:                   # 采集设置 = 分割参数（docs/01 §5.3）
+  bg_mode: column          # column | color
+  bg_color: [0, 0, 255]    # color 模式背景 RGB
+  bg_threshold: 40         # Lab 颜色距离阈值
+  erode_px: 1
+  dilate_px: 2
+  min_area_px: 400
+  max_area_px: 2000000
+  margin_px: 8
+  split_touching: false
+  bg_learn_frames: 20
+
+ml:                        # 固定训练配方（docs/01 §6.2）
+  backbone: resnet18       # resnet18 | mobilenet_v3_large
+  image_size: 160          # 128 | 160 | 224
+  min_samples_per_class: 20
+  max_train_minutes: 10
+  max_epochs: 30
+  head_epochs: 3
+  batch_size: 32
+  patience: 5
+  val_ratio: 0.2
+  num_workers: 0
+  device: auto             # auto | cpu | cuda | mps
+  pretrained: true
+  engine_build_timeout_s: 600
+
+pipeline:                  # 运行时流水线（docs/01 §5.2 §5.4 §7.3）
+  overlap_lines: 256
+  queue_size: 8
+  nozzle_expand: 0
+  infer_batch_max: 128
+  frame_timeout_s: 2.0
+  latency_warn_ms: 80
+
+cameras:
+  - id: 1
+    name: 相机1
+    kind: mock             # mock | hik
+    ip: null
+    serial: null
+    model: MV-CL043-A1GC
+    nozzles: 64
+    mock:
+      source_dir: null     # 回放目录；null = 合成蓝底矿石图
+      speed: 0             # 0 = 不限速
+      seed: 0
+      particles_per_chunk: 6
+      particle_px: [40, 160]
+      queue_size: 64
+    awb_mode: once
+    exposure_us: 50
+    width: 4096
+    offset_x: 0
+    height: 4096
+    runtime_chunk_lines: 512
+    start_px: 0
+    end_px: 4096
+    line_rate_hz: 9000
+    trigger: internal
