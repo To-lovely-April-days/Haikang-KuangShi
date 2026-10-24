@@ -59,6 +59,7 @@ capture:                   # 采集设置 = 分割参数（docs/01 §5.3）
   margin_px: 8
   split_touching: false
   bg_learn_frames: 20
+  bg_adapt_rate: 0.0        # 0~0.1，运行时背景缓慢自适应（仅无颗粒列），0 关闭
 
 ml:                        # 固定训练配方（docs/01 §6.2）
   backbone: resnet18       # resnet18 | mobilenet_v3_large

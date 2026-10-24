@@ -126,6 +126,9 @@ class CaptureSettings(StrictModel):
     margin_px: int = Field(8, ge=0, le=200, description="裁切外扩")
     split_touching: bool = Field(False, description="分水岭拆粘连")
     bg_learn_frames: int = Field(20, ge=1, le=1000, description="学习背景用的空皮带帧数")
+    bg_adapt_rate: float = Field(
+        0.0, ge=0, le=0.1, description="运行时逐列背景缓慢自适应速率（EMA，仅无颗粒的列）；0 = 关闭"
+    )
 
     @model_validator(mode="after")
     def _check(self) -> CaptureSettings:

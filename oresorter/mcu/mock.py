@@ -254,7 +254,7 @@ class MockMcuLink(McuLink):
 
     # ---- 收发 ----
     def send(
-        self, cmd: int, payload: bytes = b"", *, need_ack: bool = True, timeout: float = 0.2
+        self, cmd: int, payload: bytes = b"", *, need_ack: bool = True, timeout: float | None = None
     ) -> Ack:
         if not self._connected:
             raise McuDisconnected("Mock 下位机未连接")

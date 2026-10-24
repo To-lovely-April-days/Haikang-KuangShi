@@ -10,7 +10,9 @@ from oresorter.mcu.link import (
     McuNack,
     McuStatus,
     McuTimeout,
+    TcpMcuLink,
 )
+from oresorter.mcu.mock import MockMcuLink, MockMcuServer
 
 __all__ = [
     "Ack",
@@ -22,6 +24,9 @@ __all__ = [
     "McuNack",
     "McuStatus",
     "McuTimeout",
+    "MockMcuLink",
+    "MockMcuServer",
+    "TcpMcuLink",
     "build_mcu_link",
 ]
 

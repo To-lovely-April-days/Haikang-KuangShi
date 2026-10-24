@@ -143,10 +143,11 @@ class McuLink(ABC):
     # ---- 收发 ----
     @abstractmethod
     def send(
-        self, cmd: int, payload: bytes = b"", *, need_ack: bool = True, timeout: float = 0.2
+        self, cmd: int, payload: bytes = b"", *, need_ack: bool = True, timeout: float | None = None
     ) -> Ack:
         """发送一帧。``need_ack`` 时阻塞等待 ACK（含重发），超时抛 McuTimeout，被拒抛 McuNack，
-        未连接抛 McuDisconnected。``need_ack=False`` 立即返回 ``Ack(ok=True, result=0)``。"""
+        未连接抛 McuDisconnected。``timeout=None`` 用实现自己的默认 ACK 超时（TCP 为 ``ack_timeout``）。
+        ``need_ack=False`` 立即返回 ``Ack(ok=True, result=0)``。"""
 
     @abstractmethod
     def send_eject(self, batch: list[EjectItem]) -> None:

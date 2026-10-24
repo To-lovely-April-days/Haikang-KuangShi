@@ -146,8 +146,17 @@ def build_parser() -> argparse.ArgumentParser:
 
     b = sub.add_parser("build-engine", help="ONNX → TensorRT 引擎（仅 Jetson）")
     b.add_argument("--model-dir", type=Path, required=True)
-    b.add_argument("--fp16", action="store_true", default=True)
-    b.add_argument("--timeout", type=int, default=600)
+    b.add_argument(
+        "--no-fp16", dest="fp16", action="store_false", default=True, help="关闭 FP16（默认开启）"
+    )
+    b.add_argument("--timeout", type=int, default=600, help="trtexec 超时秒数")
+    b.add_argument(
+        "--trtexec",
+        default=None,
+        help="显式 trtexec 路径（默认 $TRTEXEC / /usr/src/tensorrt/bin / PATH）",
+    )
+    b.add_argument("--max-batch", type=int, default=128)
+    b.add_argument("--opt-batch", type=int, default=None, help="默认 min(32, max-batch)")
     b.set_defaults(func=_lazy("oresorter.ml.export", "build_engine_cli"))
 
     g = sub.add_parser("learn-bg", help="用空皮带帧学习逐列背景并保存")

@@ -10,7 +10,13 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from oresorter.config import ConfigError
+from oresorter.data.samples import StoreError
 from oresorter.log import get_logger
+from oresorter.mcu.link import McuDisconnected, McuNack, McuTimeout
+from oresorter.ml.infer import ClassifierUnavailable
+from oresorter.ml.train import TrainError
+from oresorter.runtime.jobs import JobConflict
+from oresorter.runtime.state import IllegalTransition
 
 log = get_logger(__name__)
 
@@ -64,6 +70,39 @@ def install_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(ConfigError)
     async def _config_error(_: Request, exc: ConfigError) -> JSONResponse:
         return error_response(CODE_STATUS.get(exc.code, 400), exc.code, exc.message, exc.detail)
+
+    @app.exception_handler(StoreError)
+    async def _store_error(_: Request, exc: StoreError) -> JSONResponse:
+        return error_response(CODE_STATUS.get(exc.code, 400), exc.code, exc.message, exc.detail)
+
+    @app.exception_handler(TrainError)
+    async def _train_error(_: Request, exc: TrainError) -> JSONResponse:
+        code = "CONFLICT" if exc.code == "CANCELLED" else exc.code
+        return error_response(CODE_STATUS.get(code, 400), code, exc.message, exc.detail)
+
+    @app.exception_handler(IllegalTransition)
+    async def _illegal_transition(_: Request, exc: IllegalTransition) -> JSONResponse:
+        return error_response(409, "CONFLICT", str(exc), exc.detail)
+
+    @app.exception_handler(JobConflict)
+    async def _job_conflict(_: Request, exc: JobConflict) -> JSONResponse:
+        return error_response(409, "CONFLICT", str(exc), exc.detail)
+
+    @app.exception_handler(ClassifierUnavailable)
+    async def _classifier_unavailable(_: Request, exc: ClassifierUnavailable) -> JSONResponse:
+        return error_response(409, "CONFLICT", str(exc), {})
+
+    @app.exception_handler(McuNack)
+    async def _mcu_nack(_: Request, exc: McuNack) -> JSONResponse:
+        return error_response(502, "MCU_NACK", str(exc), {"result": exc.result, "cmd": exc.cmd})
+
+    @app.exception_handler(McuTimeout)
+    async def _mcu_timeout(_: Request, exc: McuTimeout) -> JSONResponse:
+        return error_response(504, "MCU_TIMEOUT", str(exc), {})
+
+    @app.exception_handler(McuDisconnected)
+    async def _mcu_disconnected(_: Request, exc: McuDisconnected) -> JSONResponse:
+        return error_response(503, "DEVICE_OFFLINE", str(exc), {"device": "mcu"})
 
     @app.exception_handler(RequestValidationError)
     async def _validation(_: Request, exc: RequestValidationError) -> JSONResponse:
