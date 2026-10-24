@@ -9,7 +9,7 @@ dist/
 .ruff_cache/
 .mypy_cache/
 # 运行数据（默认 data_dir；开发配置指向 ./data）
-data/
+/data/
 *.plan
 *.engine
 # 本地 wheel 制品库
