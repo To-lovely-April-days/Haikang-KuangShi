@@ -128,6 +128,6 @@ curl http://127.0.0.1:8000/api/v1/health
 
 ## 与其他同事的接口
 
-- 前端（HMI）：`docs/03_前端接口清单.md` + `docs/openapi.json`（`/api/v1/docs` 可在线查看）。
+- 前端（HMI）：`docs/03_前端接口清单.md` + `docs/openapi.json`（`/api/v1/docs` 可在线查看）；对接指南 `docs/05_前端对接指南.md`，联调配置 `config/hmi-dev.yaml`（放开 CORS）。
 - 下位机（MCU）：`docs/04_下位机协议草案.md`，§9 列出待确认项（单位、链路、STATUS 格式、位图映射等）。
 - 需求侧待确认项汇总在 `docs/00_原始需求/需求整理.md` §5 与 `docs/01` §11。

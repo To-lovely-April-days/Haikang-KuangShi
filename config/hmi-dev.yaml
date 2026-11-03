@@ -1,0 +1,8 @@
+# HMI 前端联调：在 dev.yaml（Mock 相机 + Mock 下位机）基础上放开跨源访问，
+# 供前端开发服务器（如 http://localhost:5173）直接调用本机或局域网内的后端。
+# 生产环境（jetson.yaml）保持 cors_origins 为空：HMI 与后端同源部署。
+base: dev.yaml
+system:
+  data_dir: ./data
+  log_level: INFO
+  cors_origins: ["*"]
