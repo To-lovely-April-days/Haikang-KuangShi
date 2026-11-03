@@ -19,3 +19,5 @@ wheels/
 # 临时
 *.log
 /tmp/
+# 由 scripts/md_to_pdf.py 从 Markdown 导出，不入库
+docs/*.pdf
